@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { X, Plus, Layers } from 'lucide-react'
+import { X, Plus, ArrowLeftRight, Layers } from 'lucide-react'
 import type { AlternativeReason, TogetherReason } from '@/lib/types'
 import { productBySku } from '@/data/catalog'
 import { useStore } from '@/lib/store'
@@ -20,11 +20,13 @@ const TOG_LABEL: Record<TogetherReason, string> = {
 
 // MINIMAL reference of the View-related split overlay (SPEC §7): left = selected
 // item detail, right = related items with Alternatives / They-buy-together tabs.
-// Codex extends with sub-tab filter chips, Compare, and Swap-from-quote-line.
-export function RelatedOverlayStub({ sku, onClose }: { sku: string; onClose: () => void }) {
+// When opened from a quote line (lineId set), Alternatives → Swap; else → Add.
+// Codex extends with sub-tab filter chips + Compare.
+export function RelatedOverlayStub({ sku, lineId, onClose }: { sku: string; lineId?: string; onClose: () => void }) {
   const product = productBySku(sku)
   const priceListId = useStore((s) => s.priceListId())
   const addLine = useStore((s) => s.addLine)
+  const swapLine = useStore((s) => s.swapLine)
   const [tab, setTab] = useState<'alternatives' | 'together'>('alternatives')
   if (!product) return null
 
@@ -32,6 +34,8 @@ export function RelatedOverlayStub({ sku, onClose }: { sku: string; onClose: () 
     tab === 'alternatives'
       ? product.alternatives.map((r) => ({ p: productBySku(r.sku), label: ALT_LABEL[r.reason] }))
       : product.buyTogether.map((r) => ({ p: productBySku(r.sku), label: TOG_LABEL[r.reason] }))
+
+  const canSwap = tab === 'alternatives' && Boolean(lineId)
 
   return (
     <div className="fixed inset-0 bg-black/45 z-50 flex p-6">
@@ -75,8 +79,16 @@ export function RelatedOverlayStub({ sku, onClose }: { sku: string; onClose: () 
                   <Chip tone="neutral">{label}</Chip>
                   <div className="text-[12px] font-medium text-ink">{p.name}</div>
                   <div className="text-[14px] font-semibold">{money(priceFor(p, priceListId))}</div>
-                  <Button variant="primary" className="justify-center" onClick={() => { addLine(p.sku); onClose() }}>
-                    <Plus size={14} /> Add to quote
+                  <Button
+                    variant="primary"
+                    className="justify-center"
+                    onClick={() => {
+                      if (canSwap && lineId) swapLine(lineId, p.sku)
+                      else addLine(p.sku)
+                      onClose()
+                    }}
+                  >
+                    {canSwap ? <><ArrowLeftRight size={14} /> Swap</> : <><Plus size={14} /> Add</>}
                   </Button>
                 </div>
               ) : null,

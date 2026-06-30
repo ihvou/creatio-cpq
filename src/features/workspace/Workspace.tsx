@@ -1,15 +1,18 @@
 import { useState } from 'react'
 import { useStore } from '@/lib/store'
 import { ProcessBar } from '@/components/shell/ProcessBar'
-import { CatalogView } from '@/features/catalog/CatalogView'
-import { QuotePanel } from '@/features/quote/QuotePanel'
+import { DraftQuote } from '@/features/quote/DraftQuote'
 import { QuoteView } from '@/features/quote/QuoteView'
 import { OrderConfirm } from '@/features/quote/OrderConfirm'
 import { RelatedOverlayStub } from '@/features/related/RelatedOverlayStub'
+import { BrowseOverlay } from './BrowseOverlay'
+import { PasteDialog } from '@/features/intake/PasteDialog'
 
 export function Workspace() {
   const view = useStore((s) => s.view)
-  const [relatedSku, setRelatedSku] = useState<string | null>(null)
+  const [related, setRelated] = useState<{ sku: string; lineId?: string } | null>(null)
+  const [browseOpen, setBrowseOpen] = useState(false)
+  const [pasteOpen, setPasteOpen] = useState(false)
 
   return (
     <div className="h-full flex flex-col p-4 gap-3">
@@ -19,15 +22,18 @@ export function Workspace() {
       </div>
 
       {view === 'catalog' && (
-        <div className="flex-1 min-h-0 grid grid-cols-[1fr_360px] gap-4">
-          <CatalogView onViewRelated={setRelatedSku} />
-          <QuotePanel />
-        </div>
+        <DraftQuote
+          onRelated={(sku, lineId) => setRelated({ sku, lineId })}
+          onBrowse={() => setBrowseOpen(true)}
+          onPaste={() => setPasteOpen(true)}
+        />
       )}
       {view === 'quote' && <QuoteView />}
       {view === 'order' && <OrderConfirm />}
 
-      {relatedSku && <RelatedOverlayStub sku={relatedSku} onClose={() => setRelatedSku(null)} />}
+      {browseOpen && <BrowseOverlay onRelated={(sku) => setRelated({ sku })} onClose={() => setBrowseOpen(false)} />}
+      {pasteOpen && <PasteDialog onClose={() => setPasteOpen(false)} />}
+      {related && <RelatedOverlayStub sku={related.sku} lineId={related.lineId} onClose={() => setRelated(null)} />}
     </div>
   )
 }

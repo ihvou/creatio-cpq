@@ -176,12 +176,14 @@ flowchart LR
 - **Buyer / account badges** (VIP, Pro pricing eligible) live in the **buyer-context header**, tied to the identified account.
 - **Availability badges** (in stock / low / out) live **per product row** (catalog list + quote line) — never as a global header chip.
 
+**Workspace model — list-first:** the **draft quote (list) is the canvas**; intake (paste), search-to-add, and Related feed it. Browsing the full catalogue is an **optional picker**, not the default. *(Updated from the earlier catalogue+cart split — the list is the deliverable, matching material-list builders and CPQ quote-as-document.)*
+
 | Screen / state | Surface | Notes |
 |---|---|---|
 | **App shell** | Consultant | Creatio shell: dark nav rail + top bar + light content. **Nav rail collapses 240↔64px (icons only) via the top-left button.** |
 | **Identify buyer (header, top-right)** | Consultant | A **top-right header button/icon, available any time** (even after the quote is generated). Search phone/email/ID; result card; register form; eligibility badge in buyer-context header. **Changing the buyer re-prices the whole quote** from the applicable price list |
-| **Split-screen workspace** | Consultant | **Left:** search + filters + **view toggle (tiles ↔ list/table)**. **Right:** live quote (lines, qty, unit + ext price, running total, buyer context, notes). Header holds the **identify-buyer button** + Save; **Print/Share are Quote-view actions, not here** |
-| **List / table view (dense)** | Consultant | Compact, **small font (~12–13px)**, tight rows, **many metadata columns** (SKU · name · brand · category · colour/style · pack/unit · coverage · price · availability · rating · row actions incl. **View related**). Horizontal scroll on overflow. Tiles view for visual browsing |
+| **Draft quote — list-first canvas** | Consultant | The **draft quote (list) is the primary surface**: editable lines (qty, unit + ext price), per-line **Related**, running total, buyer context, **Generate quote**. Items added via a **search-to-add bar** (autocomplete), **Paste list** (intake), or **Browse catalogue** (optional). Print/Share are Quote-view actions |
+| **Browse catalogue (optional picker)** | Consultant | A toggle opens the full catalogue — tiles + **dense table** (small font; columns SKU · name · brand · category · style · pack · coverage · price · availability · rating · actions), filters + sort. Add drops items into the list; the default flow never forces full-catalogue browsing |
 | **Product detail overlay** | Both | Large photo, key specs, SKU, unit/pack, coverage/dimensions, availability, rating, install/compatibility notes |
 | **View related (split overlay)** | Consultant | **Triggered by a "View related" icon on a row.** Full-screen split: **left = selected item detail**; **right = related items (tiles or list)** with a **tab + sub-tab filter bar on top** — **Alternatives** (better price · better quality · same style → **Swap**) and **They buy together** (same style · work together → **Add**). Select 2–4 → **Compare**. Running total stays visible |
 | **Compare** | Consultant | **Full-screen**, 2–4 items side-by-side (photos + specs); action = **Swap** (or Add) |
