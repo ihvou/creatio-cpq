@@ -8,6 +8,7 @@ This file hands the parallelizable slices to Codex. Read the rules, pick a slice
 - [x] **Phase 0 — foundation** — scaffold, tokens, frozen contracts, mock data, Creatio shell, reference catalog, live quote panel, stubs. Pushed.
 - [x] **Quote slice** (foundation owner) — full quote view, share (QR / link / email) + print, order-readiness flags, buyer quote page.
 - [x] **List-first refactor** (foundation) — draft-quote canvas, search-to-add bar, Paste-list seed, Browse-catalogue picker, per-line Related + Swap. (Catalogue+cart replaced.)
+- [x] **Catalogue expansion** (foundation) — ~290 items across 14 categories + category-mapped images (`ProductTile`/`ProductHero` render `imageUrl`); curated hero/intake SKUs preserved. Makes slice-A facets / sort production-like.
 - [ ] **Slice A — Catalog** (Codex) — faceted filters + sort + dense table.
 - [ ] **Slice B — Related overlay** (Codex) — tabs / sub-tabs, Compare, Swap-from-line.
 - [x] **Slice C — Intake** (foundation owner) — capture via QR / paste → reconciliation (matched / choose / unmatched-search) + Supabase realtime.

@@ -18,8 +18,12 @@ export function ProductTile({ product, onViewRelated }: { product: Product; onVi
   const av = AVAIL[availabilityOf(product)]
   return (
     <div className="bg-surface border border-line rounded-md shadow-card p-3 flex flex-col gap-2">
-      <div className="aspect-[4/3] rounded-sm bg-surface-2 border border-line flex items-center justify-center text-ink-muted">
-        <Layers size={28} />
+      <div className="aspect-[4/3] rounded-sm bg-surface-2 border border-line overflow-hidden flex items-center justify-center text-ink-muted">
+        {product.imageUrl ? (
+          <img src={product.imageUrl} alt={product.name} loading="lazy" className="w-full h-full object-cover" />
+        ) : (
+          <Layers size={28} />
+        )}
       </div>
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
