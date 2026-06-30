@@ -1,6 +1,9 @@
 import { useState } from 'react'
+import { ClipboardList, LayoutGrid } from 'lucide-react'
 import { useStore } from '@/lib/store'
+import { Button } from '@/components/ui/primitives'
 import { ProcessBar } from '@/components/shell/ProcessBar'
+import { AddSearchBar } from './AddSearchBar'
 import { DraftQuote } from '@/features/quote/DraftQuote'
 import { QuoteView } from '@/features/quote/QuoteView'
 import { OrderConfirm } from '@/features/quote/OrderConfirm'
@@ -22,11 +25,14 @@ export function Workspace() {
       </div>
 
       {view === 'catalog' && (
-        <DraftQuote
-          onRelated={(sku, lineId) => setRelated({ sku, lineId })}
-          onBrowse={() => setBrowseOpen(true)}
-          onCapture={() => setCaptureOpen(true)}
-        />
+        <>
+          <div className="flex items-center gap-2 no-print">
+            <AddSearchBar onBrowse={() => setBrowseOpen(true)} />
+            <Button onClick={() => setCaptureOpen(true)}><ClipboardList size={14} /> Capture list</Button>
+            <Button onClick={() => setBrowseOpen(true)}><LayoutGrid size={14} /> Browse</Button>
+          </div>
+          <DraftQuote onRelated={(sku, lineId) => setRelated({ sku, lineId })} />
+        </>
       )}
       {view === 'quote' && <QuoteView />}
       {view === 'order' && <OrderConfirm />}
