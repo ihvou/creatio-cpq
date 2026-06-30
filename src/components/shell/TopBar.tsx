@@ -5,7 +5,7 @@ import { BuyerIdentify } from './BuyerIdentify'
 export function TopBar() {
   const toggleNav = useStore((s) => s.toggleNav)
   return (
-    <header className="h-[var(--c-topbar-h)] shrink-0 flex items-center gap-3 px-3 text-white" style={{ background: 'var(--c-chrome)' }}>
+    <header className="h-[var(--c-topbar-h)] shrink-0 flex items-center gap-3 px-3 text-white no-print" style={{ background: 'var(--c-chrome)' }}>
       <button onClick={toggleNav} aria-label="Toggle navigation" className="p-1.5 rounded hover:bg-white/10">
         <Menu size={18} />
       </button>

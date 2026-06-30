@@ -4,6 +4,13 @@ Phase 0 (foundation) is done on `main`: scaffold, design tokens, **frozen contra
 
 This file hands the parallelizable slices to Codex. Read the rules, pick a slice, branch, build, PR.
 
+## Status (updated each merge)
+- [x] **Phase 0 — foundation** — scaffold, tokens, frozen contracts, mock data, Creatio shell, reference catalog, live quote panel, stubs. Pushed.
+- [x] **Quote slice** (foundation owner) — full quote view, share (QR / link / email) + print, order-readiness flags, buyer quote page.
+- [ ] **Slice A — Catalog** (Codex) — faceted filters + sort + dense table.
+- [ ] **Slice B — Related overlay** (Codex) — tabs / sub-tabs, Compare, Swap-from-line.
+- [ ] **Slice C — Intake** (Codex) — buyer paste → reconciliation + QR + realtime.
+
 ## Rules of engagement
 1. **Do NOT edit** `src/lib/types.ts` or `src/lib/store.ts` — the frozen contract. Need a new action/type? Note it in your PR; the foundation owner adds it.
 2. **One slice = one folder.** Create/own files only under your slice's folder.
@@ -79,6 +86,6 @@ Use: `parseList`, `SAMPLE_PARSED`/`SAMPLE_PASTE`, `productBySku`, `addLine`, `ap
 
 ---
 
-## Foundation-owner Phase 1 (not Codex)
-- `src/features/quote/`: full quote view (number, validity, grouped lines, totals, notes), share (QR/link/email) + print, and **order-readiness flags** — call `readinessFor(quote.lines)` at Create order; render a tiny inline per-row marker. Buyer quote page `/q/:quoteId`.
-- Supabase realtime review; integrate slices A–C into `Workspace.tsx`.
+## Foundation-owner Phase 1
+- [x] `src/features/quote/`: full quote view (number, validity, lines, totals, notes), share (QR/link/email) + print, **order-readiness flags** (`readinessFor` at Create order → tiny inline per-row markers), buyer quote page `/q/:quoteId`. **Done.**
+- [ ] Integrate slices A–C into `Workspace.tsx` + Supabase realtime review (as they land).

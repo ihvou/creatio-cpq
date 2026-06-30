@@ -15,7 +15,7 @@ const ITEMS: { label: string; color: string; active?: boolean }[] = [
 export function NavRail({ collapsed }: { collapsed: boolean }) {
   return (
     <aside
-      className="h-full shrink-0 text-white flex flex-col"
+      className="h-full shrink-0 text-white flex flex-col no-print"
       style={{ width: collapsed ? 'var(--c-nav-w-collapsed)' : 'var(--c-nav-w)', background: 'var(--c-chrome)' }}
     >
       <div className="h-[var(--c-topbar-h)] flex items-center px-4 font-semibold text-[15px]">

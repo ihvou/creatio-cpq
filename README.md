@@ -28,7 +28,7 @@ Only the cross-device temp link needs it. Create a free project and set in `.env
 VITE_SUPABASE_URL=...
 VITE_SUPABASE_ANON_KEY=...
 ```
-Table: `sessions (id uuid primary key, data jsonb, updated_at timestamptz)` with Realtime enabled. Without env, the app runs single-device and degrades gracefully.
+Table: `sessions (id text primary key, data jsonb, updated_at timestamptz)` with Realtime enabled. (Text id holds both temp-link session ids and `cpq:quote:<id>` keys for shared quotes.) Without env, the app runs single-device and degrades gracefully.
 
 ## Deploy (Netlify)
 Connect the GitHub repo. [`netlify.toml`](netlify.toml) sets build `npm run build`, publish `dist`, and an SPA redirect. Add the two `VITE_SUPABASE_*` env vars in Netlify if using cross-device.

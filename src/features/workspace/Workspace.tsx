@@ -3,8 +3,8 @@ import { useStore } from '@/lib/store'
 import { ProcessBar } from '@/components/shell/ProcessBar'
 import { CatalogView } from '@/features/catalog/CatalogView'
 import { QuotePanel } from '@/features/quote/QuotePanel'
-import { QuoteViewStub } from '@/features/quote/QuoteViewStub'
-import { OrderConfirmStub } from '@/features/quote/OrderConfirmStub'
+import { QuoteView } from '@/features/quote/QuoteView'
+import { OrderConfirm } from '@/features/quote/OrderConfirm'
 import { RelatedOverlayStub } from '@/features/related/RelatedOverlayStub'
 
 export function Workspace() {
@@ -13,7 +13,7 @@ export function Workspace() {
 
   return (
     <div className="h-full flex flex-col p-4 gap-3">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between no-print">
         <h1 className="text-[18px] font-semibold text-ink">CPQ · Quote builder</h1>
         <ProcessBar />
       </div>
@@ -24,8 +24,8 @@ export function Workspace() {
           <QuotePanel />
         </div>
       )}
-      {view === 'quote' && <QuoteViewStub />}
-      {view === 'order' && <OrderConfirmStub />}
+      {view === 'quote' && <QuoteView />}
+      {view === 'order' && <OrderConfirm />}
 
       {relatedSku && <RelatedOverlayStub sku={relatedSku} onClose={() => setRelatedSku(null)} />}
     </div>

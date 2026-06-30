@@ -219,7 +219,7 @@ PriceList (default | buyer-specific) ── Product  (unit price)
 
 **Pragmatic storage for the demo:**
 - **Static (in-repo JSON/TS):** `Account`, `Contact`, `Product` (catalog + relationships + 2 prices + stock), `PriceList`. No DB needed for these.
-- **Supabase (cross-device + live):** one `sessions` table — `{ id uuid pk, data jsonb, updated_at }` — holding the whole draft quote. The temp link = `/t/{session.id}`; the QR encodes that URL. Consultant subscribes to Realtime changes on the row. (Optionally also seed `quotes`/`quote_lines` tables to make the data-model story literal.)
+- **Supabase (cross-device + live):** one `sessions` table — `{ id text pk, data jsonb, updated_at }` — holding the whole draft quote (text id also stores `cpq:quote:<id>` keys for shared quotes). The temp link = `/t/{session.id}`; the QR encodes that URL. Consultant subscribes to Realtime changes on the row. (Optionally also seed `quotes`/`quote_lines` tables to make the data-model story literal.)
 
 ---
 
@@ -281,7 +281,7 @@ flowchart LR
 **Backend (confirmed): Supabase.** Only the cross-device temp link needs a backend — one `sessions` table + Realtime, used client-side with the anon key. No edge function (parse is emulated). If your free org's 2-project slot is taken, delete an unused project or spin a new free org. Catalog/accounts stay static, so the temp link is the only thing touching the backend.
 
 **Setup checklist (the only accounts you need):**
-1. A Supabase project (free) — URL + anon key + one `sessions` table (`id uuid`, `data jsonb`, `updated_at`).
+1. A Supabase project (free) — URL + anon key + one `sessions` table (`id text`, `data jsonb`, `updated_at`).
 2. GitHub repo → connect to **Netlify** (or Cloudflare Pages) for push-to-deploy.
 
 ---

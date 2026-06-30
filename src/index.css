@@ -18,3 +18,8 @@ body {
 }
 
 * { box-sizing: border-box; }
+
+@media print {
+  .no-print { display: none !important; }
+  html, body, #root, main { height: auto !important; overflow: visible !important; background: #fff !important; }
+}
