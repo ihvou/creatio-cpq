@@ -1,0 +1,127 @@
+/* ============================================================
+   Creatio-style Design Tokens — CPQ Guided Selling prototype
+   Extracted from Creatio Freedom UI screenshots
+   (Case / Service, Email campaign results, Account analytics).
+   Hex values below are the CANONICAL source of truth.
+   Values are estimated from screenshots — fine-tune against
+   exact brand hexes if available. See design/DESIGN.md.
+   ============================================================ */
+
+:root {
+  /* ---- Brand chrome (dark navigation rail + top bar) ---- */
+  --c-chrome:            #1A1830;
+  --c-chrome-2:          #242042;
+  --c-chrome-gradient:   linear-gradient(165deg, #3A2C5A 0%, #1A1830 55%);
+  --c-on-chrome:         #FFFFFF;
+  --c-on-chrome-muted:   #A9A8BE;
+  --c-chrome-hover:      rgba(255, 255, 255, 0.08);
+  --c-chrome-active:     rgba(255, 255, 255, 0.12);
+
+  /* ---- Primary action (buttons, links) ---- */
+  --c-primary:           #1A73E8;
+  --c-primary-hover:     #1664CC;
+  --c-primary-active:    #1257B0;
+  --c-primary-fg:        #FFFFFF;
+  --c-link:              #1A73E8;
+
+  /* ---- Accent (Creatio orange-red: active-tab underline, section markers) ---- */
+  --c-accent:            #F4511E;
+  --c-accent-soft:       #FDECE4;
+
+  /* ---- Status ---- */
+  --c-success:           #2EA85C;  --c-success-bg: #E4F4EA;
+  --c-stage:             #46B24A;  /* process chevrons */
+  --c-info:              #2C7BE5;  --c-info-bg:    #E5EFFC;
+  --c-warning:           #F5A623;  --c-warning-bg: #FCF1D8;
+  --c-danger:            #E5484D;  --c-danger-bg:  #FBE6E7;
+
+  /* ---- Neutrals ---- */
+  --c-bg:                #F3F4F6;  /* app content background */
+  --c-surface:           #FFFFFF;  /* cards */
+  --c-surface-2:         #F7F8FA;
+  --c-border:            #E5E7EE;
+  --c-border-strong:     #D3D6E0;
+  --c-text:              #1B1B2E;  /* headings / near-black navy */
+  --c-text-secondary:    #565768;
+  --c-text-muted:        #8A8C9C;  /* field labels, captions */
+  --c-text-disabled:     #B4B6C2;
+
+  /* ---- Chips / badges ---- */
+  --c-chip-neutral-bg:   #EEF0F4;  --c-chip-neutral-fg: #3C3D4A;
+  --c-chip-blue-bg:      #E3EEFB;  --c-chip-blue-fg:    #1A73E8;
+  --c-chip-green-bg:     #E4F4EA;  --c-chip-green-fg:   #1E8E4E;
+  --c-chip-yellow-bg:    #FBEFCB;  --c-chip-yellow-fg:  #936A12;
+  --c-chip-red-bg:       #FBE6E7;  --c-chip-red-fg:     #C5363B;
+
+  /* ---- Typography ---- */
+  --c-font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --c-text-2xl:  24px;  /* page title  — weight 600 */
+  --c-text-xl:   18px;  /* sub-title   — weight 600 */
+  --c-text-lg:   16px;  /* section     — weight 600 */
+  --c-text-base: 14px;  /* body        — weight 400 */
+  --c-text-sm:   13px;  /* secondary   — weight 400 */
+  --c-text-xs:   12px;  /* labels/caps — weight 500 */
+  --c-weight-regular:  400;
+  --c-weight-medium:   500;
+  --c-weight-semibold: 600;
+  --c-leading: 1.45;
+
+  /* ---- Radius ---- */
+  --c-radius-sm:   6px;   /* buttons, inputs, rect chips */
+  --c-radius-md:   8px;   /* cards */
+  --c-radius-lg:   12px;  /* KPI cards, modals */
+  --c-radius-xl:   16px;
+  --c-radius-pill: 999px; /* pills, stage chevrons */
+
+  /* ---- Shadows ---- */
+  --c-shadow-xs: 0 1px 2px rgba(16, 16, 40, 0.06);
+  --c-shadow-sm: 0 1px 3px rgba(16, 16, 40, 0.08), 0 1px 2px rgba(16, 16, 40, 0.04);
+  --c-shadow-md: 0 4px 12px rgba(16, 16, 40, 0.10);
+  --c-shadow-lg: 0 16px 40px rgba(16, 16, 40, 0.20);
+
+  /* ---- Spacing scale ---- */
+  --c-space-1: 4px;  --c-space-2: 8px;  --c-space-3: 12px; --c-space-4: 16px;
+  --c-space-5: 20px; --c-space-6: 24px; --c-space-8: 32px; --c-space-10: 40px;
+
+  /* ---- Layout ---- */
+  --c-nav-w:           240px;
+  --c-nav-w-collapsed: 64px;
+  --c-topbar-h:        56px;
+  --c-panel-w:         400px;
+
+  /* ---- App-icon palette (mock nav items) ---- */
+  --c-app-cpq:       #6C5CE7;  /* our new module */
+  --c-app-accounts:  #F2913D;
+  --c-app-contacts:  #3E7BFA;
+  --c-app-opportun:  #2BB0A6;
+  --c-app-orders:    #34B36B;
+  --c-app-products:  #E0606E;
+  --c-app-invoices:  #46B24A;
+}
+
+/* ============================================================
+   shadcn/ui semantic mapping (HSL channels, no hsl() wrapper)
+   Lets shadcn components inherit the Creatio look out of the box.
+   ============================================================ */
+:root {
+  --background:            220 14% 96%;
+  --foreground:            240 26% 14%;
+  --card:                  0 0% 100%;
+  --card-foreground:       240 26% 14%;
+  --popover:               0 0% 100%;
+  --popover-foreground:    240 26% 14%;
+  --primary:               214 81% 51%;
+  --primary-foreground:    0 0% 100%;
+  --secondary:             228 25% 95%;
+  --secondary-foreground:  240 20% 20%;
+  --muted:                 228 25% 95%;
+  --muted-foreground:      233 9% 58%;
+  --accent:                14 90% 54%;
+  --accent-foreground:     0 0% 100%;
+  --destructive:           358 75% 59%;
+  --destructive-foreground:0 0% 100%;
+  --border:                228 23% 92%;
+  --input:                 228 23% 92%;
+  --ring:                  214 81% 51%;
+  --radius:                0.5rem;
+}
