@@ -6,7 +6,7 @@ import { CatalogView } from '@/features/catalog/CatalogView'
 export function BrowseOverlay({ onRelated, onClose }: { onRelated: (sku: string) => void; onClose: () => void }) {
   return (
     <div className="fixed inset-0 bg-black/45 z-40 flex p-6">
-      <div className="m-auto bg-surface rounded-lg shadow-modal w-full max-w-[1080px] h-[85vh] flex flex-col overflow-hidden">
+      <div className="m-auto bg-surface rounded-lg shadow-modal w-[96vw] max-w-[1500px] h-[90vh] flex flex-col overflow-hidden">
         <div className="flex items-center justify-between px-4 h-12 border-b border-line">
           <span className="text-[14px] font-semibold">Browse catalogue</span>
           <div className="flex items-center gap-3">
