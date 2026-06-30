@@ -10,7 +10,7 @@ This file hands the parallelizable slices to Codex. Read the rules, pick a slice
 - [x] **List-first refactor** (foundation) — draft-quote canvas, search-to-add bar, Paste-list seed, Browse-catalogue picker, per-line Related + Swap. (Catalogue+cart replaced.)
 - [ ] **Slice A — Catalog** (Codex) — faceted filters + sort + dense table.
 - [ ] **Slice B — Related overlay** (Codex) — tabs / sub-tabs, Compare, Swap-from-line.
-- [ ] **Slice C — Intake** (Codex) — buyer paste → reconciliation + QR + realtime.
+- [x] **Slice C — Intake** (foundation owner) — capture via QR / paste → reconciliation (matched / choose / unmatched-search) + Supabase realtime.
 
 ## Rules of engagement
 1. **Do NOT edit** `src/lib/types.ts` or `src/lib/store.ts` — the frozen contract. Need a new action/type? Note it in your PR; the foundation owner adds it.
@@ -49,7 +49,7 @@ Types — `@/lib/types`: `Product`, `Account`, `Contact`, `Quote`, `QuoteLine`, 
 | `src/lib/*`, `src/data/*`, `src/components/shell/*`, `src/components/ui/*` | foundation — **do not edit** |
 | `src/features/catalog/*` | Codex — slice A |
 | `src/features/related/*` | Codex — slice B |
-| `src/features/intake/*` + `src/pages/IntakePaste.tsx` | Codex — slice C (PasteDialog seed by foundation) |
+| `src/features/intake/*` + `src/pages/IntakePaste.tsx` | foundation owner — slice C (done) |
 | `src/features/quote/*`, `src/pages/BuyerQuote.tsx` | foundation owner — Phase 1 |
 | `src/features/workspace/*` (Workspace, BrowseOverlay), `src/features/quote/DraftQuote.tsx` | foundation owner |
 
@@ -76,9 +76,9 @@ Full View-related overlay:
 Use: `productBySku`, `product.alternatives` / `product.buyTogether` (`{sku, reason}`), `swapLine`, `addLine`, `priceFor`.
 **Acceptance:** opens from a catalog row AND a quote line; tabs+sub-tabs filter; Swap replaces the line (keeps `originalSku`, re-prices); Compare works; total updates live.
 
-## Slice C — Intake (buyer paste → reconciliation)
+## Slice C — Intake (buyer paste → reconciliation) — DONE (foundation owner)
 **Folder:** `src/features/intake/` + `src/pages/IntakePaste.tsx` · **SPEC:** Scenario 2, §10
-> A minimal `PasteDialog.tsx` seed exists (runs `parseList` → adds confident matches to the list). Extend it into full reconciliation:
+> **Done:** `CaptureListDialog.tsx` captures via QR temp-link (buyer phone → Supabase realtime) or direct paste, then reconciles into three buckets — matched / choose-from-candidates / unmatched-search → add to the list. Original card below kept for reference / optional polish.
 - Buyer page (`/t/:sessionId`): textarea prefilled with `SAMPLE_PASTE` → on send, `upsertSession(sessionId, {paste})`. If `!SUPABASE_READY`, keep working single-device (memory/localStorage).
 - Consultant side: a "Capture list" action opening a reconciliation panel. Run `parseList(text)` → render `ParsedLine[]` in three buckets: `high` → auto-add (`applyParsed` or `addLine`), `low` → pick from `candidateSkus`, `sku === null` → unmatched, manual search. **Nothing dropped silently.**
 - Cross-device: consultant `subscribeSession(sessionId, cb)`; when the buyer paste arrives, reconcile.

@@ -19,11 +19,11 @@ const AVAIL: Record<AvailabilityState, { tone: 'green' | 'yellow' | 'red'; label
 export function DraftQuote({
   onRelated,
   onBrowse,
-  onPaste,
+  onCapture,
 }: {
   onRelated: (sku: string, lineId: string) => void
   onBrowse: () => void
-  onPaste: () => void
+  onCapture: () => void
 }) {
   const quote = useStore((s) => s.quote)
   const buyer = useStore((s) => s.buyer)
@@ -55,7 +55,7 @@ export function DraftQuote({
             <div className="text-[12px] text-ink-muted mt-0.5">{buyer ? buyer.name : 'No buyer — standard pricing'}</div>
           </div>
           <div className="flex gap-2">
-            <Button onClick={onPaste}><ClipboardList size={14} /> Paste list</Button>
+            <Button onClick={onCapture}><ClipboardList size={14} /> Capture list</Button>
             <Button onClick={onBrowse}><LayoutGrid size={14} /> Browse catalogue</Button>
           </div>
         </div>
@@ -103,7 +103,7 @@ export function DraftQuote({
           {quote.lines.length === 0 ? (
             <div className="p-10 text-center text-[13px] text-ink-muted">
               Your list is empty. Search above,{' '}
-              <button onClick={onPaste} className="text-primary">paste a list</button>, or{' '}
+              <button onClick={onCapture} className="text-primary">capture a list</button>, or{' '}
               <button onClick={onBrowse} className="text-primary">browse the catalogue</button>.
             </div>
           ) : (
