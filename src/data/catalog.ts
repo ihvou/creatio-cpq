@@ -43,9 +43,11 @@ function pick<T>(arr: T[], key: string): T {
   return arr[Math.floor(hash01(key) * arr.length)]
 }
 
-function imageFor(category: string, sku: string): string {
-  const kw = CATEGORY_IMG[category] ?? 'building,material'
-  return `https://loremflickr.com/400/300/${kw}?lock=${Math.floor(hash01(sku + 'img') * 100000)}`
+// Finding 4: category-icon placeholders (via ProductThumb) replaced the loosely
+// matched stock photos. Return '' so components render the category icon.
+// Drop a real curated URL here later to show photos.
+function imageFor(_category: string, _sku: string): string {
+  return ''
 }
 
 // ---- Curated hero / intake items (stable SKUs — do not rename) ----

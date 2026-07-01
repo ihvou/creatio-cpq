@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useParams } from 'react-router-dom'
-import type { Quote } from '@/lib/types'
-import { loadSharedQuote } from '@/features/quote/quoteShare'
+import { loadSharedQuote, type SharedQuote } from '@/features/quote/quoteShare'
 import { money } from '@/lib/format'
 import { selectSubtotal } from '@/lib/store'
-import { Button } from '@/components/ui/primitives'
+import { Button, Chip } from '@/components/ui/primitives'
 
 function Center({ children }: { children: ReactNode }) {
   return <div className="min-h-screen bg-bg flex items-center justify-center p-4">{children}</div>
@@ -14,14 +13,14 @@ function Center({ children }: { children: ReactNode }) {
 // Buyer-facing read-only quote + next actions (SPEC Scenario 4 / §6.I).
 export function BuyerQuote() {
   const { quoteId = '' } = useParams()
-  const [quote, setQuote] = useState<Quote | null | undefined>(undefined)
+  const [shared, setShared] = useState<SharedQuote | null | undefined>(undefined)
 
   useEffect(() => {
-    void loadSharedQuote(quoteId).then(setQuote)
+    void loadSharedQuote(quoteId).then(setShared)
   }, [quoteId])
 
-  if (quote === undefined) return <Center><div className="text-[13px] text-ink-muted">Loading…</div></Center>
-  if (!quote)
+  if (shared === undefined) return <Center><div className="text-[13px] text-ink-muted">Loading…</div></Center>
+  if (!shared)
     return (
       <Center>
         <div className="text-[13px] text-ink-muted text-center max-w-[320px]">
@@ -30,11 +29,18 @@ export function BuyerQuote() {
       </Center>
     )
 
+  const { quote, buyerName, badge } = shared
   return (
     <Center>
       <div className="w-full max-w-[440px] bg-surface border border-line rounded-md shadow-card p-5">
-        <div className="text-[16px] font-semibold">Quote {quote.number}</div>
-        <div className="text-[12px] text-ink-muted">Valid until {quote.validUntil}</div>
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <div className="text-[16px] font-semibold">Quote {quote.number}</div>
+            {buyerName && <div className="text-[12px] text-ink-secondary">{buyerName}</div>}
+            <div className="text-[12px] text-ink-muted">Valid until {quote.validUntil}</div>
+          </div>
+          {badge && <Chip tone="green">{badge}</Chip>}
+        </div>
         <div className="mt-3">
           {quote.lines.map((l) => (
             <div key={l.id} className="flex justify-between text-[13px] py-1 border-b border-line">

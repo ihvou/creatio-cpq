@@ -8,6 +8,7 @@ import {
   Layers,
   List,
   Plus,
+  Search,
   Star,
   X,
 } from 'lucide-react'
@@ -20,6 +21,8 @@ import { money } from '@/lib/format'
 import { cn } from '@/lib/util'
 import { Button, Chip } from '@/components/ui/primitives'
 import { useEscape } from '@/lib/useEscape'
+import { ProductThumb } from '@/components/ui/ProductThumb'
+import { CompareOverlay } from './CompareOverlay'
 
 type RelatedTab = 'alternatives' | 'together'
 type RelatedView = 'tiles' | 'list'
@@ -57,6 +60,7 @@ export function RelatedOverlay({ sku, lineId, onClose }: { sku: string; lineId?:
   const [selected, setSelected] = useState<string[]>([])
   const [compareOpen, setCompareOpen] = useState(false)
   const [lastAction, setLastAction] = useState<string | null>(null)
+  const [query, setQuery] = useState('')
 
   useEscape(() => (compareOpen ? setCompareOpen(false) : onClose()))
 
@@ -64,24 +68,25 @@ export function RelatedOverlay({ sku, lineId, onClose }: { sku: string; lineId?:
     if (!product) return
     setAltReason(firstReason(product.alternatives, ALT_REASONS, 'better_price'))
     setTogetherReason(firstReason(product.buyTogether, TOGETHER_REASONS, 'work_together'))
-    setSelected([])
+    setSelected([product.sku]) // auto-select the source item so +1 more = compare (finding 12)
     setCompareOpen(false)
     setLastAction(null)
+    setQuery('')
   }, [product])
 
   const refs = tab === 'alternatives' ? product?.alternatives ?? [] : product?.buyTogether ?? []
   const reason = tab === 'alternatives' ? altReason : togetherReason
   const reasons = tab === 'alternatives' ? ALT_REASONS : TOGETHER_REASONS
   const reasonCounts = useMemo(() => countReasons(refs), [refs])
-  const items = useMemo(
-    () =>
-      refs
-        .filter((ref) => ref.reason === reason)
-        .map((ref) => ({ ref, product: productBySku(ref.sku) }))
-        .filter((item): item is { ref: RelatedRef<Reason>; product: Product } => Boolean(item.product))
-        .sort((a, b) => AVAIL[availabilityOf(a.product)].sort - AVAIL[availabilityOf(b.product)].sort || b.product.rating - a.product.rating),
-    [reason, refs],
-  )
+  const items = useMemo(() => {
+    const term = query.trim().toLowerCase()
+    return refs
+      .filter((ref) => ref.reason === reason)
+      .map((ref) => ({ ref, product: productBySku(ref.sku) }))
+      .filter((item): item is { ref: RelatedRef<Reason>; product: Product } => Boolean(item.product))
+      .filter(({ product: item }) => !term || [item.name, item.brand, item.sku].join(' ').toLowerCase().includes(term))
+      .sort((a, b) => AVAIL[availabilityOf(a.product)].sort - AVAIL[availabilityOf(b.product)].sort || b.product.rating - a.product.rating)
+  }, [reason, refs, query])
   const selectedProducts = selected.map((selectedSku) => productBySku(selectedSku)).filter((p): p is Product => Boolean(p))
 
   if (!product) return null
@@ -151,7 +156,7 @@ export function RelatedOverlay({ sku, lineId, onClose }: { sku: string; lineId?:
                 active={tab === 'alternatives'}
                 onClick={() => {
                   setTab('alternatives')
-                  setSelected([])
+                  setSelected([product.sku])
                 }}
               >
                 Alternatives
@@ -160,7 +165,7 @@ export function RelatedOverlay({ sku, lineId, onClose }: { sku: string; lineId?:
                 active={tab === 'together'}
                 onClick={() => {
                   setTab('together')
-                  setSelected([])
+                  setSelected([product.sku])
                 }}
               >
                 They buy together
@@ -178,7 +183,7 @@ export function RelatedOverlay({ sku, lineId, onClose }: { sku: string; lineId?:
                   onClick={() => {
                     if (tab === 'alternatives') setAltReason(item.value as AlternativeReason)
                     else setTogetherReason(item.value as TogetherReason)
-                    setSelected([])
+                    setSelected([product.sku])
                   }}
                   className={cn(
                     'h-7 px-2.5 rounded-[var(--c-radius-pill)] text-[12px] inline-flex items-center gap-1.5',
@@ -191,6 +196,10 @@ export function RelatedOverlay({ sku, lineId, onClose }: { sku: string; lineId?:
               )
             })}
             <div className="flex-1" />
+            <div className="flex items-center gap-1.5 bg-surface border border-line rounded-sm px-2 h-7 w-[160px]">
+              <Search size={13} className="text-ink-muted" />
+              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Filter" aria-label="Filter related items" className="flex-1 text-[12px] outline-none bg-transparent" />
+            </div>
             <div className="flex items-center gap-1 bg-surface border border-line rounded-sm p-0.5">
               <button onClick={() => setView('tiles')} className={cn('p-1.5 rounded-sm', view === 'tiles' ? 'bg-bg text-ink' : 'text-ink-muted')} aria-label="Tiles view">
                 <LayoutGrid size={14} />
@@ -262,11 +271,7 @@ export function RelatedOverlay({ sku, lineId, onClose }: { sku: string; lineId?:
 }
 
 function ProductHero({ product }: { product: Product }) {
-  return (
-    <div className="aspect-[4/3] rounded-md bg-surface border border-line flex items-center justify-center text-ink-muted">
-      {product.imageUrl ? <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover rounded-md" /> : <Layers size={34} />}
-    </div>
-  )
+  return <ProductThumb product={product} size={34} className="aspect-[4/3] rounded-md" />
 }
 
 function RelatedCard({
@@ -385,69 +390,6 @@ function RelatedList({
         </tbody>
       </table>
     </div>
-  )
-}
-
-function CompareOverlay({
-  products,
-  actionLabel,
-  total,
-  onAction,
-  onClose,
-}: {
-  products: Product[]
-  actionLabel: string
-  total: number
-  onAction: (sku: string) => void
-  onClose: () => void
-}) {
-  return (
-    <div className="fixed inset-0 bg-surface z-[60] flex flex-col">
-      <div className="h-14 border-b border-line px-5 flex items-center gap-3 shrink-0">
-        <button onClick={onClose} className="inline-flex items-center gap-1 text-[13px] text-ink-muted hover:text-ink">
-          <ArrowLeft size={15} /> Back to related
-        </button>
-        <div className="text-[15px] font-semibold text-ink">Compare selected items</div>
-        <div className="flex-1" />
-        <div className="text-[12px] text-ink-muted">Running total</div>
-        <div className="text-[18px] font-semibold">{money(total)}</div>
-      </div>
-      <div className="flex-1 min-h-0 overflow-auto p-5">
-        <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${products.length}, minmax(220px, 1fr))` }}>
-          {products.map((product) => (
-            <div key={product.sku} className="border border-line rounded-md bg-surface shadow-card p-3 flex flex-col gap-3">
-              <ProductHero product={product} />
-              <div>
-                <div className="text-[14px] font-semibold">{product.name}</div>
-                <div className="text-[12px] text-ink-muted">{product.brand} · {product.sku}</div>
-              </div>
-              <CompareSpecs product={product} />
-              <Button variant="primary" className="justify-center mt-auto" onClick={() => onAction(product.sku)}>
-                {actionLabel === 'Swap' ? <ArrowLeftRight size={14} /> : <Plus size={14} />}
-                {actionLabel}
-              </Button>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function CompareSpecs({ product }: { product: Product }) {
-  const priceListId = useStore((s) => s.priceListId())
-  return (
-    <dl className="grid grid-cols-2 gap-x-3 gap-y-2 text-[12px]">
-      <Spec label="Price" value={money(priceFor(product, priceListId))} />
-      <Spec label="Availability" value={AVAIL[availabilityOf(product)].label} />
-      <Spec label="Rating" value={product.rating.toFixed(1)} />
-      <Spec label="Quality" value={`Tier ${product.qualityTier}`} />
-      <Spec label="Colour" value={product.color} />
-      <Spec label="Style" value={product.style} />
-      {Object.entries(product.specs).map(([key, value]) => (
-        <Spec key={key} label={key} value={value} />
-      ))}
-    </dl>
   )
 }
 

@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
-import { Search, Plus, Layers } from 'lucide-react'
+import { Search, Plus, Check } from 'lucide-react'
 import type { AvailabilityState } from '@/lib/types'
 import { useStore } from '@/lib/store'
 import { searchCatalog } from '@/data/catalog'
 import { priceFor } from '@/lib/pricing'
 import { availabilityOf } from '@/lib/inventory'
 import { money } from '@/lib/format'
+import { cn } from '@/lib/util'
 import { Chip } from '@/components/ui/primitives'
+import { ProductThumb } from '@/components/ui/ProductThumb'
 
 const AVAIL: Record<AvailabilityState, { tone: 'green' | 'yellow' | 'red'; label: string }> = {
   available: { tone: 'green', label: 'In stock' },
@@ -15,10 +17,12 @@ const AVAIL: Record<AvailabilityState, { tone: 'green' | 'yellow' | 'red'; label
 }
 
 // Primary add affordance (list-first): a full-width page-level search with a rich
-// autocomplete. Adds lines inline; "Browse" opens the faceted picker for explore.
+// autocomplete. Each result row is a single-click add (finding 7); the whole row
+// is clickable and shows in-quote state (finding 10).
 export function AddSearchBar({ onBrowse }: { onBrowse: (query?: string) => void }) {
   const priceListId = useStore((s) => s.priceListId())
   const addLine = useStore((s) => s.addLine)
+  const lines = useStore((s) => s.quote.lines)
   const [q, setQ] = useState('')
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -67,25 +71,25 @@ export function AddSearchBar({ onBrowse }: { onBrowse: (query?: string) => void 
             <>
               {results.map((p) => {
                 const av = AVAIL[availabilityOf(p)]
+                const qty = lines.find((l) => l.sku === p.sku && !l.originalSku)?.qty
                 return (
-                  <div key={p.sku} className="flex items-center gap-3 px-3 py-2 hover:bg-surface-2 border-b border-line last:border-0">
-                    <div className="w-10 h-10 rounded-sm bg-surface-2 border border-line overflow-hidden flex items-center justify-center text-ink-muted shrink-0">
-                      {p.imageUrl ? <img src={p.imageUrl} alt="" loading="lazy" className="w-full h-full object-cover" /> : <Layers size={16} />}
-                    </div>
+                  <button
+                    key={p.sku}
+                    onClick={() => addLine(p.sku)}
+                    className="w-full flex items-center gap-3 px-3 py-2 hover:bg-surface-2 border-b border-line last:border-0 text-left"
+                    aria-label={`Add ${p.name}`}
+                  >
+                    <ProductThumb product={p} size={16} className="w-10 h-10 rounded-sm shrink-0" />
                     <div className="min-w-0 flex-1">
                       <div className="text-[13px] text-ink truncate">{p.name}</div>
                       <div className="text-[11px] text-ink-muted truncate">{p.brand} · {p.sku}</div>
                     </div>
                     <Chip tone={av.tone}>{av.label}</Chip>
                     <span className="text-[13px] font-medium w-16 text-right shrink-0">{money(priceFor(p, priceListId))}</span>
-                    <button
-                      onClick={() => addLine(p.sku)}
-                      className="inline-flex items-center gap-1 text-[12px] text-white bg-primary hover:bg-primary-hover rounded-sm px-2.5 py-1.5 shrink-0"
-                      aria-label={`Add ${p.name}`}
-                    >
-                      <Plus size={13} /> Add
-                    </button>
-                  </div>
+                    <span className={cn('inline-flex items-center gap-1 text-[12px] rounded-sm px-2.5 py-1.5 shrink-0', qty ? 'text-[var(--c-success)] bg-[var(--c-success-bg)]' : 'text-white bg-primary')}>
+                      {qty ? <><Check size={13} /> Added ({qty})</> : <><Plus size={13} /> Add</>}
+                    </span>
+                  </button>
                 )
               })}
               <button onClick={() => { onBrowse(q); setOpen(false) }} className="w-full text-left px-3 py-2 text-[12px] text-primary hover:bg-surface-2">

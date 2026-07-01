@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { AlertTriangle, Printer, Share2, ArrowLeft, ShoppingCart } from 'lucide-react'
-import { useStore, selectSubtotal } from '@/lib/store'
+import { useStore, selectSubtotal, selectSavings } from '@/lib/store'
 import { readinessFor } from '@/lib/readiness'
 import type { ReadinessIssue } from '@/lib/types'
 import { money } from '@/lib/format'
@@ -24,6 +24,8 @@ export function QuoteView() {
   const setView = useStore((s) => s.setView)
   const createOrder = useStore((s) => s.createOrder)
   const subtotal = selectSubtotal(quote.lines)
+  const priceListId = useStore((s) => s.priceListId())
+  const savings = selectSavings(quote.lines, priceListId)
 
   const [shareOpen, setShareOpen] = useState(false)
   const [showFlags, setShowFlags] = useState(false)
@@ -117,6 +119,12 @@ export function QuoteView() {
 
           <div className="flex justify-end mt-3">
             <div className="w-[240px]">
+              {savings > 0 && (
+                <div className="flex justify-between text-[12px] text-[var(--c-success)] mb-1">
+                  <span>Pro pricing savings</span>
+                  <span>−{money(savings)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-[15px] font-semibold">
                 <span>Subtotal</span>
                 <span>{money(subtotal)}</span>

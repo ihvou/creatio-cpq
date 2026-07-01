@@ -16,7 +16,7 @@ export function ShareDialog({ onClose }: { onClose: () => void }) {
 
   useEffect(() => {
     shareQuote()
-    void saveSharedQuote({ ...quote, status: 'shared' })
+    void saveSharedQuote({ ...quote, status: 'shared' }, buyer?.name ?? null, buyer?.eligibilityBadge ?? null)
   }, [])
 
   async function copy() {

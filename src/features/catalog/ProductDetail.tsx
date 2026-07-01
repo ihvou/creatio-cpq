@@ -7,6 +7,7 @@ import { availabilityOf } from '@/lib/inventory'
 import { money } from '@/lib/format'
 import { useEscape } from '@/lib/useEscape'
 import { Button, Chip } from '@/components/ui/primitives'
+import { ProductThumb } from '@/components/ui/ProductThumb'
 
 const AVAIL: Record<AvailabilityState, { tone: 'green' | 'yellow' | 'red'; label: string }> = {
   available: { tone: 'green', label: 'In stock' },
@@ -32,15 +33,19 @@ export function ProductDetail({ sku, onClose, onViewRelated }: { sku: string; on
           <button onClick={onClose} aria-label="Close"><X size={18} className="text-ink-muted" /></button>
         </div>
         <div className="flex-1 min-h-0 overflow-auto p-5 grid grid-cols-[minmax(0,1fr)_320px] gap-6">
-          <div className="aspect-[4/3] rounded-md bg-surface-2 border border-line overflow-hidden flex items-center justify-center text-ink-muted">
-            {product.imageUrl ? <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" /> : <Layers size={40} />}
-          </div>
+          <ProductThumb product={product} size={40} className="aspect-[4/3] rounded-md" />
           <div>
             <div className="text-[18px] font-semibold text-ink">{product.name}</div>
             <div className="text-[12px] text-ink-muted mt-0.5">{product.brand} · {product.sku}</div>
-            <div className="mt-3 flex items-center gap-2">
+            <div className="mt-3 flex items-center gap-2 flex-wrap">
               <div className="text-[22px] font-semibold">{money(priceFor(product, priceListId))}</div>
               <span className="text-[12px] text-ink-muted">/ {product.unit}</span>
+              {priceListId === 'buyer' && product.priceBuyer < product.priceDefault && (
+                <>
+                  <span className="text-[13px] text-ink-muted line-through">{money(product.priceDefault)}</span>
+                  <Chip tone="green">Save {money(product.priceDefault - product.priceBuyer)}</Chip>
+                </>
+              )}
             </div>
             <div className="mt-2 flex flex-wrap items-center gap-1.5">
               <Chip tone={av.tone}>{av.label}</Chip>

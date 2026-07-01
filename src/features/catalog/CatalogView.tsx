@@ -1,14 +1,16 @@
 import { useMemo, useState, type ReactNode } from 'react'
-import { LayoutGrid, List, Search, X } from 'lucide-react'
+import { Columns3, LayoutGrid, List, Search, X } from 'lucide-react'
 import type { AvailabilityState, PriceListId, Product } from '@/lib/types'
-import { useStore } from '@/lib/store'
-import { searchCatalog, catalogIndex } from '@/data/catalog'
+import { useStore, selectSubtotal } from '@/lib/store'
+import { searchCatalog, catalogIndex, productBySku } from '@/data/catalog'
 import { cn } from '@/lib/util'
 import { priceFor } from '@/lib/pricing'
 import { availabilityOf } from '@/lib/inventory'
 import { ProductTile } from './ProductTile'
 import { CatalogTable, type CatalogSort } from './CatalogTable'
 import { ProductDetail } from './ProductDetail'
+import { CompareOverlay } from '@/features/related/CompareOverlay'
+import { Button } from '@/components/ui/primitives'
 
 type FacetKey = 'category' | 'color' | 'style' | 'brand' | 'availability'
 type PriceBandId = 'under_10' | '10_20' | '20_30' | '30_50' | '50_plus'
@@ -51,6 +53,10 @@ export function CatalogView({ onViewRelated, initialQuery = '' }: { onViewRelate
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS)
   const [sort, setSort] = useState<CatalogSort>('best_match')
   const [detailSku, setDetailSku] = useState<string | null>(null)
+  const [selected, setSelected] = useState<string[]>([])
+  const [compareOpen, setCompareOpen] = useState(false)
+  const addLine = useStore((s) => s.addLine)
+  const subtotal = useStore((s) => selectSubtotal(s.quote.lines))
 
   const searched = useMemo(() => searchCatalog(q), [q])
   const products = useMemo(() => {
@@ -89,6 +95,11 @@ export function CatalogView({ onViewRelated, initialQuery = '' }: { onViewRelate
   function resetFilters() {
     setFilters(EMPTY_FILTERS)
   }
+
+  function toggleSelect(sku: string) {
+    setSelected((cur) => (cur.includes(sku) ? cur.filter((s) => s !== sku) : cur.length >= 4 ? cur : [...cur, sku]))
+  }
+  const selectedProducts = selected.map((s) => productBySku(s)).filter((p): p is Product => Boolean(p))
 
   return (
     <div className="h-full flex flex-col min-h-0">
@@ -199,16 +210,30 @@ export function CatalogView({ onViewRelated, initialQuery = '' }: { onViewRelate
           ) : catalogView === 'tiles' ? (
             <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3">
               {products.map((p) => (
-                <ProductTile key={p.sku} product={p} onViewRelated={onViewRelated} onOpenDetail={setDetailSku} />
+                <ProductTile key={p.sku} product={p} onViewRelated={onViewRelated} onOpenDetail={setDetailSku} selected={selected.includes(p.sku)} onToggleSelect={toggleSelect} />
               ))}
             </div>
           ) : (
-            <CatalogTable products={products} onViewRelated={onViewRelated} onOpenDetail={setDetailSku} sort={sort} onSort={setSort} />
+            <CatalogTable products={products} onViewRelated={onViewRelated} onOpenDetail={setDetailSku} sort={sort} onSort={setSort} selected={new Set(selected)} onToggleSelect={toggleSelect} />
           )}
         </div>
       </div>
 
+      {selected.length > 0 && (
+        <div className="shrink-0 mt-3 flex items-center gap-3 bg-surface border border-line rounded-md px-3 h-11">
+          <span className="text-[12px] text-ink-secondary">{selected.length} selected to compare</span>
+          <div className="flex-1" />
+          <button onClick={() => setSelected([])} className="text-[12px] text-ink-muted hover:text-ink">Clear</button>
+          <Button variant="primary" onClick={() => setCompareOpen(true)} disabled={selected.length < 2}>
+            <Columns3 size={14} /> Compare ({selected.length})
+          </Button>
+        </div>
+      )}
+
       {detailSku && <ProductDetail sku={detailSku} onClose={() => setDetailSku(null)} onViewRelated={onViewRelated} />}
+      {compareOpen && (
+        <CompareOverlay products={selectedProducts} actionLabel="Add" total={subtotal} onAction={(sku) => addLine(sku)} onClose={() => setCompareOpen(false)} />
+      )}
     </div>
   )
 }

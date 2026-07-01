@@ -3,6 +3,7 @@ import type { Account, Contact, ParsedLine, PriceListId, Quote, QuoteLine } from
 import { productBySku } from '@/data/catalog'
 import { ACCOUNTS, contactsForAccount } from '@/data/accounts'
 import { priceFor, lineExt } from './pricing'
+import { round2 } from './format'
 import { genId } from './util'
 
 // ============================================================
@@ -77,6 +78,7 @@ interface StoreState {
   generateQuote: () => void
   shareQuote: () => void
   createOrder: () => void
+  resetDraft: () => void
 }
 
 export const useStore = create<StoreState>((set, get) => ({
@@ -204,8 +206,26 @@ export const useStore = create<StoreState>((set, get) => ({
   generateQuote: () => set((s) => ({ view: 'quote', quote: { ...s.quote, validUntil: plus30Days() } })),
   shareQuote: () => set((s) => ({ quote: { ...s.quote, status: 'shared' } })),
   createOrder: () => set((s) => ({ view: 'order', quote: { ...s.quote, status: 'ordered' } })),
+
+  // Clear the draft and start fresh (keeps the identified buyer). Review finding 1.
+  resetDraft: () =>
+    set((s) => ({
+      quote: { ...newQuote(), accountId: s.buyer?.id ?? null, contactId: s.contact?.id ?? null },
+      view: 'catalog',
+    })),
 }))
 
 export function selectSubtotal(lines: QuoteLine[]): number {
   return Math.round(lines.reduce((sum, l) => sum + l.extPrice, 0) * 100) / 100
+}
+
+// Savings vs the standard price list when a buyer-priced account is active (finding 5).
+export function selectSavings(lines: QuoteLine[], priceListId: PriceListId): number {
+  if (priceListId !== 'buyer') return 0
+  return round2(
+    lines.reduce((sum, l) => {
+      const p = productBySku(l.sku)
+      return p ? sum + (p.priceDefault - p.priceBuyer) * l.qty : sum
+    }, 0),
+  )
 }
