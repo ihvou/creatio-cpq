@@ -52,6 +52,7 @@ interface StoreState {
   quote: Quote
   buyer: Account | null
   contact: Contact | null
+  verified: boolean
   view: WorkspaceView
   catalogView: CatalogView
   navCollapsed: boolean
@@ -61,6 +62,7 @@ interface StoreState {
   // buyer (available anytime — re-prices the whole quote; SPEC §6.1, §9)
   setBuyer: (accountId: string | null) => void
   registerBuyer: (input: { name: string; phone?: string; email?: string }) => void
+  verifyBuyer: () => void
 
   // line operations
   addLine: (sku: string, qty?: number) => void
@@ -86,6 +88,7 @@ export const useStore = create<StoreState>((set, get) => ({
   quote: newQuote(),
   buyer: null,
   contact: null,
+  verified: false,
   view: 'catalog',
   catalogView: 'tiles',
   navCollapsed: false,
@@ -100,6 +103,7 @@ export const useStore = create<StoreState>((set, get) => ({
     set((s) => ({
       buyer,
       contact,
+      verified: false,
       quote: {
         ...s.quote,
         accountId: buyer?.id ?? null,
@@ -121,8 +125,10 @@ export const useStore = create<StoreState>((set, get) => ({
       priceListId: 'default',
       vip: false,
     }
-    set((s) => ({ buyer, contact: null, quote: { ...s.quote, accountId: buyer.id, contactId: null, opportunityId: 'OPP-2026-NEW' } }))
+    set((s) => ({ buyer, contact: null, verified: false, quote: { ...s.quote, accountId: buyer.id, contactId: null, opportunityId: 'OPP-2026-NEW' } }))
   },
+
+  verifyBuyer: () => set({ verified: true }),
 
   addLine: (sku, qty = 1) => {
     const product = productBySku(sku)

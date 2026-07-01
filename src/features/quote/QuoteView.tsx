@@ -31,6 +31,7 @@ const STATUS_TONE = { draft: 'neutral', shared: 'blue', ordered: 'green' } as co
 export function QuoteView() {
   const quote = useStore((s) => s.quote)
   const buyer = useStore((s) => s.buyer)
+  const verified = useStore((s) => s.verified)
   const contact = useStore((s) => s.contact)
   const setNote = useStore((s) => s.setNote)
   const setView = useStore((s) => s.setView)
@@ -69,6 +70,7 @@ export function QuoteView() {
             <div className="mt-2 flex flex-wrap gap-1.5">
               {buyer?.eligibilityBadge && <Chip tone="green">{buyer.eligibilityBadge}</Chip>}
               {quote.opportunityId && <Chip tone="blue">Source: Opp {quote.opportunityId}</Chip>}
+              {buyer && (verified ? <Chip tone="green">Verified buyer</Chip> : <Chip tone="yellow">Unverified</Chip>)}
               {quote.status !== 'draft' && <Chip tone="neutral">Prices locked on share</Chip>}
             </div>
           </div>

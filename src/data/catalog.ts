@@ -1,5 +1,6 @@
 import type { AlternativeReason, Product, RelatedRef, TogetherReason } from '@/lib/types'
 import { round2 } from '@/lib/format'
+import { primaryImage } from '@/lib/productImages'
 
 // ============================================================
 // Mock catalogue. The recommendation engine reads relationships from this data
@@ -46,8 +47,8 @@ function pick<T>(arr: T[], key: string): T {
 // Finding 4: category-icon placeholders (via ProductThumb) replaced the loosely
 // matched stock photos. Return '' so components render the category icon.
 // Drop a real curated URL here later to show photos.
-function imageFor(_category: string, _sku: string): string {
-  return ''
+function imageFor(category: string, sku: string): string {
+  return primaryImage(category, sku)
 }
 
 // Category-specific spec attributes so detail / compare are meaningful and

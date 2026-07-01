@@ -7,7 +7,7 @@ import { availabilityOf } from '@/lib/inventory'
 import { money } from '@/lib/format'
 import { useEscape } from '@/lib/useEscape'
 import { Button, Chip } from '@/components/ui/primitives'
-import { ProductThumb } from '@/components/ui/ProductThumb'
+import { ProductGallery } from '@/components/ui/ProductGallery'
 
 const AVAIL: Record<AvailabilityState, { tone: 'green' | 'yellow' | 'red'; label: string }> = {
   available: { tone: 'green', label: 'In stock' },
@@ -27,13 +27,13 @@ export function ProductDetail({ sku, onClose, onViewRelated }: { sku: string; on
 
   return (
     <div className="fixed inset-0 bg-black/45 z-[55] flex p-6" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="m-auto bg-surface rounded-lg shadow-modal w-full max-w-[900px] max-h-[88vh] overflow-hidden flex flex-col">
+      <div className="m-auto bg-surface rounded-lg shadow-modal w-full max-w-[1040px] max-h-[90vh] overflow-hidden flex flex-col">
         <div className="flex items-center justify-between px-5 h-12 border-b border-line shrink-0">
           <span className="text-[15px] font-semibold">Product details</span>
           <button onClick={onClose} aria-label="Close"><X size={18} className="text-ink-muted" /></button>
         </div>
         <div className="flex-1 min-h-0 overflow-auto p-5 grid grid-cols-[minmax(0,1fr)_320px] gap-6">
-          <ProductThumb product={product} size={40} className="aspect-[4/3] rounded-md" />
+          <ProductGallery product={product} />
           <div>
             <div className="text-[18px] font-semibold text-ink">{product.name}</div>
             <div className="text-[12px] text-ink-muted mt-0.5">{product.brand} · {product.sku}</div>

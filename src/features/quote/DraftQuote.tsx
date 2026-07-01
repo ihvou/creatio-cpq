@@ -13,6 +13,7 @@ import { ConfigCheckDialog } from './ConfigCheckDialog'
 export function DraftQuote({ onRelated }: { onRelated: (sku: string, lineId?: string) => void }) {
   const quote = useStore((s) => s.quote)
   const buyer = useStore((s) => s.buyer)
+  const verified = useStore((s) => s.verified)
   const priceListId = useStore((s) => s.priceListId())
   const setQty = useStore((s) => s.setQty)
   const removeLine = useStore((s) => s.removeLine)
@@ -39,6 +40,7 @@ export function DraftQuote({ onRelated }: { onRelated: (sku: string, lineId?: st
               <Chip tone="neutral">draft</Chip>
               {buyer?.eligibilityBadge && <Chip tone="green">{buyer.eligibilityBadge}</Chip>}
               {quote.opportunityId && <Chip tone="blue">Opp {quote.opportunityId}</Chip>}
+              {buyer && (verified ? <Chip tone="green">Verified</Chip> : <Chip tone="yellow">Unverified</Chip>)}
             </div>
             <div className="text-[12px] text-ink-muted mt-0.5">{buyer ? buyer.name : 'No buyer — standard pricing'}</div>
           </div>

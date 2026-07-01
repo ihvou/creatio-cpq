@@ -60,6 +60,7 @@ export interface Contact {
   name: string
   phone: string
   email: string
+  photo?: string // portrait for visual identity check
 }
 
 export type QuoteStatus = 'draft' | 'shared' | 'ordered'

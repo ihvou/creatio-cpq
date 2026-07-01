@@ -26,8 +26,8 @@ export const ACCOUNTS: Account[] = [
 ]
 
 export const CONTACTS: Contact[] = [
-  { id: 'CT-ACME-1', accountId: 'ACC-ACME', name: 'Marco Diaz', phone: '+1 415 555 0142', email: 'marco@acmereno.com' },
-  { id: 'CT-BRIGHT-1', accountId: 'ACC-BRIGHT', name: 'Tanya Brooks', phone: '+1 312 555 0199', email: 'tanya@brightline.co' },
+  { id: 'CT-ACME-1', accountId: 'ACC-ACME', name: 'Marco Diaz', phone: '+1 415 555 0142', email: 'marco@acmereno.com', photo: 'https://randomuser.me/api/portraits/men/32.jpg' },
+  { id: 'CT-BRIGHT-1', accountId: 'ACC-BRIGHT', name: 'Tanya Brooks', phone: '+1 312 555 0199', email: 'tanya@brightline.co', photo: 'https://randomuser.me/api/portraits/women/44.jpg' },
 ]
 
 export function contactsForAccount(accountId: string): Contact[] {
