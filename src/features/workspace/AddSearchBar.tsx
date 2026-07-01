@@ -16,7 +16,7 @@ const AVAIL: Record<AvailabilityState, { tone: 'green' | 'yellow' | 'red'; label
 
 // Primary add affordance (list-first): a full-width page-level search with a rich
 // autocomplete. Adds lines inline; "Browse" opens the faceted picker for explore.
-export function AddSearchBar({ onBrowse }: { onBrowse: () => void }) {
+export function AddSearchBar({ onBrowse }: { onBrowse: (query?: string) => void }) {
   const priceListId = useStore((s) => s.priceListId())
   const addLine = useStore((s) => s.addLine)
   const [q, setQ] = useState('')
@@ -51,6 +51,7 @@ export function AddSearchBar({ onBrowse }: { onBrowse: () => void }) {
             if (e.key === 'Escape') setOpen(false)
           }}
           placeholder="Add products to the quote — search by name, SKU, brand…"
+          aria-label="Add products to the quote"
           className="flex-1 text-[14px] outline-none bg-transparent"
         />
       </div>
@@ -60,7 +61,7 @@ export function AddSearchBar({ onBrowse }: { onBrowse: () => void }) {
           {results.length === 0 ? (
             <div className="px-4 py-3 text-[13px] text-ink-muted">
               No matches.{' '}
-              <button onClick={() => { onBrowse(); setOpen(false) }} className="text-primary">Browse the catalogue →</button>
+              <button onClick={() => { onBrowse(q); setOpen(false) }} className="text-primary">Browse the catalogue →</button>
             </div>
           ) : (
             <>
@@ -87,7 +88,7 @@ export function AddSearchBar({ onBrowse }: { onBrowse: () => void }) {
                   </div>
                 )
               })}
-              <button onClick={() => { onBrowse(); setOpen(false) }} className="w-full text-left px-3 py-2 text-[12px] text-primary hover:bg-surface-2">
+              <button onClick={() => { onBrowse(q); setOpen(false) }} className="w-full text-left px-3 py-2 text-[12px] text-primary hover:bg-surface-2">
                 See all {all.length} match{all.length === 1 ? '' : 'es'} in Browse →
               </button>
             </>

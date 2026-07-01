@@ -10,6 +10,7 @@ import { subscribeSession, SUPABASE_READY } from '@/lib/supabase'
 import { priceFor } from '@/lib/pricing'
 import { money } from '@/lib/format'
 import { genId, cn } from '@/lib/util'
+import { useEscape } from '@/lib/useEscape'
 import { Button, Chip } from '@/components/ui/primitives'
 
 // Intake (SPEC Scenario 2, §10). Capture the buyer's list via a QR temp link
@@ -28,6 +29,8 @@ export function CaptureListDialog({ onClose }: { onClose: () => void }) {
   const [phase, setPhase] = useState<'capture' | 'reconcile'>('capture')
   const [text, setText] = useState(SAMPLE_PASTE)
   const [rows, setRows] = useState<Row[]>([])
+
+  useEscape(onClose)
 
   useEffect(() => {
     const unsub = subscribeSession(sessionId, (data) => {
@@ -61,7 +64,7 @@ export function CaptureListDialog({ onClose }: { onClose: () => void }) {
   const includedCount = rows.filter((r) => r.include && r.resolvedSku).length
 
   return (
-    <div className="fixed inset-0 bg-black/45 z-40 flex p-6">
+    <div className="fixed inset-0 bg-black/45 z-40 flex p-6" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="m-auto bg-surface rounded-lg shadow-modal w-full max-w-[640px] max-h-[85vh] flex flex-col overflow-hidden">
         <div className="flex items-center justify-between px-5 h-12 border-b border-line shrink-0">
           <span className="text-[15px] font-semibold">Capture the buyer's list</span>

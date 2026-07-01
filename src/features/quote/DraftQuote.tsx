@@ -15,7 +15,7 @@ export function DraftQuote({ onRelated }: { onRelated: (sku: string, lineId: str
 
   return (
     <div className="flex-1 min-h-0 overflow-auto">
-      <div className="max-w-[880px] mx-auto bg-surface border border-line rounded-md shadow-card flex flex-col">
+      <div className="max-w-[1040px] mx-auto bg-surface border border-line rounded-md shadow-card flex flex-col">
         <div className="p-4 border-b border-line">
           <div className="flex items-center gap-2">
             <span className="text-[16px] font-semibold">Quote {quote.number}</span>

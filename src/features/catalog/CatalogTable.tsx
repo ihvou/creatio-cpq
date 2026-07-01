@@ -12,26 +12,30 @@ const AVAIL_LABEL: Record<AvailabilityState, string> = { available: 'In stock', 
 
 export type CatalogSort = 'best_match' | 'price_asc' | 'price_desc' | 'availability' | 'rating'
 
-// Dense procurement-style list (SPEC §7): small font, many metadata columns,
-// horizontal overflow, and sortable procurement fields.
+// Dense procurement-style list (SPEC §7; review F5/F6): thumbnail + merged
+// metadata columns so price / availability / actions stay on-screen. Thumbnail
+// and name open the product detail (F7).
 export function CatalogTable({
   products,
   onViewRelated,
+  onOpenDetail,
   sort,
   onSort,
 }: {
   products: Product[]
   onViewRelated: (sku: string) => void
+  onOpenDetail?: (sku: string) => void
   sort: CatalogSort
   onSort: (sort: CatalogSort) => void
 }) {
   const priceListId = useStore((s) => s.priceListId())
   const addLine = useStore((s) => s.addLine)
   return (
-    <div className="overflow-auto border border-line rounded-md bg-surface">
+    <div className="overflow-x-auto border border-line rounded-md bg-surface">
       <table className="w-full text-[12px] border-collapse">
         <thead className="text-ink-muted bg-surface-2 sticky top-0">
           <tr className="[&>th]:text-left [&>th]:font-medium [&>th]:px-2 [&>th]:py-1.5 [&>th]:whitespace-nowrap">
+            <th></th>
             <th>SKU</th>
             <th>
               <button onClick={() => onSort('best_match')} className="inline-flex items-center gap-1 hover:text-ink">
@@ -40,32 +44,39 @@ export function CatalogTable({
             </th>
             <th>Brand</th>
             <th>Category</th>
-            <th>Colour</th>
-            <th>Style</th>
-            <th>Pack</th>
-            <th>Coverage</th>
+            <th>Colour / style</th>
+            <th>Pack / coverage</th>
             <SortHeader align="right" active={sort === 'price_asc' || sort === 'price_desc'} direction={sort === 'price_desc' ? 'desc' : 'asc'} onClick={() => onSort(sort === 'price_asc' ? 'price_desc' : 'price_asc')}>
               Price
             </SortHeader>
             <SortHeader active={sort === 'availability'} onClick={() => onSort('availability')}>Avail.</SortHeader>
-            <SortHeader active={sort === 'rating'} onClick={() => onSort('rating')}>Rating</SortHeader>
+            <SortHeader align="right" active={sort === 'rating'} onClick={() => onSort('rating')}>Rating</SortHeader>
             <th></th>
           </tr>
         </thead>
         <tbody className="text-ink">
           {products.map((p) => (
             <tr key={p.sku} className="border-t border-line hover:bg-surface-2 [&>td]:px-2 [&>td]:py-1.5 [&>td]:align-middle">
+              <td>
+                <button
+                  onClick={() => onOpenDetail?.(p.sku)}
+                  className="w-9 h-9 rounded-sm bg-surface-2 border border-line overflow-hidden flex items-center justify-center text-ink-muted shrink-0"
+                  aria-label={`View details for ${p.name}`}
+                >
+                  {p.imageUrl ? <img src={p.imageUrl} alt="" loading="lazy" className="w-full h-full object-cover" /> : <Layers size={14} />}
+                </button>
+              </td>
               <td className="font-mono text-[11px] text-ink-secondary whitespace-nowrap">{p.sku}</td>
-              <td className="whitespace-nowrap">{p.name}</td>
-              <td className="text-ink-secondary">{p.brand}</td>
-              <td className="text-ink-secondary">{p.category}</td>
-              <td className="text-ink-secondary">{p.color}</td>
-              <td className="text-ink-secondary">{p.style}</td>
-              <td className="text-ink-secondary whitespace-nowrap">{p.packSize} / {p.unit}</td>
-              <td className="text-ink-secondary whitespace-nowrap">{p.coverage ?? '—'}</td>
+              <td className="max-w-[220px]">
+                <button onClick={() => onOpenDetail?.(p.sku)} className="truncate block text-left hover:text-primary max-w-[220px]">{p.name}</button>
+              </td>
+              <td className="text-ink-secondary whitespace-nowrap">{p.brand}</td>
+              <td className="text-ink-secondary whitespace-nowrap">{p.category}</td>
+              <td className="text-ink-secondary whitespace-nowrap">{p.color}{p.style !== '—' ? ` · ${p.style}` : ''}</td>
+              <td className="text-ink-secondary whitespace-nowrap">{p.packSize} / {p.unit}{p.coverage ? ` · ${p.coverage}` : ''}</td>
               <td className="text-right font-medium whitespace-nowrap">{money(priceFor(p, priceListId))}</td>
               <td><Chip tone={AVAIL[availabilityOf(p)]}>{AVAIL_LABEL[availabilityOf(p)]}</Chip></td>
-              <td className="text-ink-secondary">{p.rating.toFixed(1)}</td>
+              <td className="text-right text-ink-secondary">{p.rating.toFixed(1)}</td>
               <td>
                 <div className="flex gap-1 justify-end">
                   <button onClick={() => onViewRelated(p.sku)} className="p-1 rounded hover:bg-bg text-ink-secondary" aria-label="View related"><Layers size={14} /></button>

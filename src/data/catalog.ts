@@ -263,6 +263,14 @@ export function productBySku(sku: string): Product | undefined {
   return BY_SKU.get(sku)
 }
 
+const ORDER_INDEX = new Map(CATALOG.map((p, i) => [p.sku, i]))
+
+// Stable catalogue position — used for best-match tie-breaking without the
+// O(n) CATALOG.indexOf() inside a sort comparator.
+export function catalogIndex(sku: string): number {
+  return ORDER_INDEX.get(sku) ?? Number.MAX_SAFE_INTEGER
+}
+
 export function searchCatalog(q: string): Product[] {
   const term = q.trim().toLowerCase()
   if (!term) return CATALOG

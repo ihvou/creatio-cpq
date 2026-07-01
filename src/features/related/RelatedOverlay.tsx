@@ -19,6 +19,7 @@ import { availabilityOf } from '@/lib/inventory'
 import { money } from '@/lib/format'
 import { cn } from '@/lib/util'
 import { Button, Chip } from '@/components/ui/primitives'
+import { useEscape } from '@/lib/useEscape'
 
 type RelatedTab = 'alternatives' | 'together'
 type RelatedView = 'tiles' | 'list'
@@ -41,9 +42,8 @@ const AVAIL: Record<AvailabilityState, { tone: 'green' | 'yellow' | 'red'; label
   out: { tone: 'red', label: 'Out of stock', sort: 2 },
 }
 
-// Full View-related split overlay (SPEC §7). The export name stays the same so
-// the foundation Workspace can keep importing this file without a contract edit.
-export function RelatedOverlayStub({ sku, lineId, onClose }: { sku: string; lineId?: string; onClose: () => void }) {
+// Full View-related split overlay (SPEC §7).
+export function RelatedOverlay({ sku, lineId, onClose }: { sku: string; lineId?: string; onClose: () => void }) {
   const product = productBySku(sku)
   const priceListId = useStore((s) => s.priceListId())
   const quote = useStore((s) => s.quote)
@@ -57,6 +57,8 @@ export function RelatedOverlayStub({ sku, lineId, onClose }: { sku: string; line
   const [selected, setSelected] = useState<string[]>([])
   const [compareOpen, setCompareOpen] = useState(false)
   const [lastAction, setLastAction] = useState<string | null>(null)
+
+  useEscape(() => (compareOpen ? setCompareOpen(false) : onClose()))
 
   useEffect(() => {
     if (!product) return
@@ -105,7 +107,7 @@ export function RelatedOverlayStub({ sku, lineId, onClose }: { sku: string; line
   }
 
   return (
-    <div className="fixed inset-0 bg-black/45 z-50 flex p-5">
+    <div className="fixed inset-0 bg-black/45 z-50 flex p-5" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="m-auto bg-surface rounded-lg shadow-modal w-full h-full max-h-[92vh] max-w-[1180px] flex overflow-hidden">
         <section className="w-[330px] shrink-0 border-r border-line bg-surface-2 flex flex-col min-h-0">
           <div className="p-4 border-b border-line bg-surface">

@@ -2,12 +2,13 @@ import { useMemo, useState, type ReactNode } from 'react'
 import { LayoutGrid, List, Search, X } from 'lucide-react'
 import type { AvailabilityState, PriceListId, Product } from '@/lib/types'
 import { useStore } from '@/lib/store'
-import { CATALOG, searchCatalog } from '@/data/catalog'
+import { searchCatalog, catalogIndex } from '@/data/catalog'
 import { cn } from '@/lib/util'
 import { priceFor } from '@/lib/pricing'
 import { availabilityOf } from '@/lib/inventory'
 import { ProductTile } from './ProductTile'
 import { CatalogTable, type CatalogSort } from './CatalogTable'
+import { ProductDetail } from './ProductDetail'
 
 type FacetKey = 'category' | 'color' | 'style' | 'brand' | 'availability'
 type PriceBandId = 'under_10' | '10_20' | '20_30' | '30_50' | '50_plus'
@@ -22,21 +23,9 @@ interface Filters {
   ratingMin: number | null
 }
 
-const EMPTY_FILTERS: Filters = {
-  category: [],
-  color: [],
-  style: [],
-  brand: [],
-  availability: [],
-  priceBand: null,
-  ratingMin: null,
-}
+const EMPTY_FILTERS: Filters = { category: [], color: [], style: [], brand: [], availability: [], priceBand: null, ratingMin: null }
 
-const AVAIL_LABEL: Record<AvailabilityState, string> = {
-  available: 'In stock',
-  low: 'Low stock',
-  out: 'Out of stock',
-}
+const AVAIL_LABEL: Record<AvailabilityState, string> = { available: 'In stock', low: 'Low stock', out: 'Out of stock' }
 
 const PRICE_BANDS: { id: PriceBandId; label: string; test: (price: number) => boolean }[] = [
   { id: 'under_10', label: 'Under $10', test: (price) => price < 10 },
@@ -54,13 +43,14 @@ const RATING_FILTERS = [
 
 const AVAIL_SORT_WEIGHT: Record<AvailabilityState, number> = { available: 0, low: 1, out: 2 }
 
-export function CatalogView({ onViewRelated }: { onViewRelated: (sku: string) => void }) {
+export function CatalogView({ onViewRelated, initialQuery = '' }: { onViewRelated: (sku: string) => void; initialQuery?: string }) {
   const catalogView = useStore((s) => s.catalogView)
   const setCatalogView = useStore((s) => s.setCatalogView)
   const priceListId = useStore((s) => s.priceListId())
-  const [q, setQ] = useState('')
+  const [q, setQ] = useState(initialQuery)
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS)
   const [sort, setSort] = useState<CatalogSort>('best_match')
+  const [detailSku, setDetailSku] = useState<string | null>(null)
 
   const searched = useMemo(() => searchCatalog(q), [q])
   const products = useMemo(() => {
@@ -68,16 +58,27 @@ export function CatalogView({ onViewRelated }: { onViewRelated: (sku: string) =>
     return sortProducts(filtered, sort, q, priceListId)
   }, [filters, priceListId, q, searched, sort])
 
+  // F2: facet counts memoized instead of recomputed inline on every render.
+  const facets = useMemo(
+    () => ({
+      category: facetOptions('category', searched, filters, priceListId),
+      color: facetOptions('color', searched, filters, priceListId),
+      style: facetOptions('style', searched, filters, priceListId),
+      brand: facetOptions('brand', searched, filters, priceListId),
+      availability: facetOptions('availability', searched, filters, priceListId),
+      priceBands: PRICE_BANDS.map((band) => ({ ...band, count: countWithFilters(searched, filters, priceListId, 'priceBand', band.id) })),
+      ratings: RATING_FILTERS.map((r) => ({ ...r, count: countWithFilters(searched, filters, priceListId, 'ratingMin', r.value) })),
+    }),
+    [searched, filters, priceListId],
+  )
+
   const activeFilters = useMemo(() => activeFilterChips(filters), [filters])
   const hasFilters = activeFilters.length > 0
 
   function setMultiFilter(key: FacetKey, value: string) {
     setFilters((current) => {
       const values = current[key] as string[]
-      return {
-        ...current,
-        [key]: values.includes(value) ? values.filter((v) => v !== value) : [...values, value],
-      }
+      return { ...current, [key]: values.includes(value) ? values.filter((v) => v !== value) : [...values, value] }
     })
   }
 
@@ -100,16 +101,13 @@ export function CatalogView({ onViewRelated }: { onViewRelated: (sku: string) =>
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Search the catalogue"
+                aria-label="Search the catalogue"
                 className="flex-1 text-[13px] outline-none bg-transparent"
               />
             </div>
             <label className="text-[12px] text-ink-muted flex items-center gap-1">
               Sort
-              <select
-                value={sort}
-                onChange={(e) => setSort(e.target.value as CatalogSort)}
-                className="h-9 bg-surface border border-line rounded-sm px-2 text-[12px] text-ink outline-none"
-              >
+              <select value={sort} onChange={(e) => setSort(e.target.value as CatalogSort)} className="h-9 bg-surface border border-line rounded-sm px-2 text-[12px] text-ink outline-none">
                 <option value="best_match">Best match</option>
                 <option value="price_asc">Price low-high</option>
                 <option value="price_desc">Price high-low</option>
@@ -134,9 +132,7 @@ export function CatalogView({ onViewRelated }: { onViewRelated: (sku: string) =>
               </button>
             ))}
             {hasFilters && (
-              <button onClick={resetFilters} className="text-[12px] text-primary hover:underline">
-                Clear filters
-              </button>
+              <button onClick={resetFilters} className="text-[12px] text-primary hover:underline">Clear filters</button>
             )}
           </div>
         </div>
@@ -153,56 +149,38 @@ export function CatalogView({ onViewRelated }: { onViewRelated: (sku: string) =>
       <div className="flex-1 min-h-0 grid grid-cols-[220px_minmax(0,1fr)] gap-3">
         <aside className="bg-surface border border-line rounded-md overflow-auto p-3">
           <FacetGroup title="Category">
-            {facetOptions('category', searched, filters, priceListId).map((o) => (
+            {facets.category.map((o) => (
               <FacetButton key={o.value} label={o.value} count={o.count} selected={filters.category.includes(o.value)} onClick={() => setMultiFilter('category', o.value)} />
             ))}
           </FacetGroup>
           <FacetGroup title="Colour / finish">
-            {facetOptions('color', searched, filters, priceListId).map((o) => (
+            {facets.color.map((o) => (
               <FacetButton key={o.value} label={o.value} count={o.count} selected={filters.color.includes(o.value)} onClick={() => setMultiFilter('color', o.value)} />
             ))}
           </FacetGroup>
           <FacetGroup title="Material / style">
-            {facetOptions('style', searched, filters, priceListId).map((o) => (
+            {facets.style.map((o) => (
               <FacetButton key={o.value} label={o.value} count={o.count} selected={filters.style.includes(o.value)} onClick={() => setMultiFilter('style', o.value)} />
             ))}
           </FacetGroup>
           <FacetGroup title="Brand">
-            {facetOptions('brand', searched, filters, priceListId).map((o) => (
+            {facets.brand.map((o) => (
               <FacetButton key={o.value} label={o.value} count={o.count} selected={filters.brand.includes(o.value)} onClick={() => setMultiFilter('brand', o.value)} />
             ))}
           </FacetGroup>
           <FacetGroup title="Availability">
-            {facetOptions('availability', searched, filters, priceListId).map((o) => (
-              <FacetButton
-                key={o.value}
-                label={AVAIL_LABEL[o.value as AvailabilityState]}
-                count={o.count}
-                selected={filters.availability.includes(o.value as AvailabilityState)}
-                onClick={() => setMultiFilter('availability', o.value)}
-              />
+            {facets.availability.map((o) => (
+              <FacetButton key={o.value} label={AVAIL_LABEL[o.value as AvailabilityState]} count={o.count} selected={filters.availability.includes(o.value as AvailabilityState)} onClick={() => setMultiFilter('availability', o.value)} />
             ))}
           </FacetGroup>
           <FacetGroup title="Price range">
-            {PRICE_BANDS.map((band) => (
-              <FacetButton
-                key={band.id}
-                label={band.label}
-                count={countWithFilters(searched, filters, priceListId, 'priceBand', band.id)}
-                selected={filters.priceBand === band.id}
-                onClick={() => setFilters((current) => ({ ...current, priceBand: current.priceBand === band.id ? null : band.id }))}
-              />
+            {facets.priceBands.map((band) => (
+              <FacetButton key={band.id} label={band.label} count={band.count} selected={filters.priceBand === band.id} onClick={() => setFilters((current) => ({ ...current, priceBand: current.priceBand === band.id ? null : band.id }))} />
             ))}
           </FacetGroup>
           <FacetGroup title="Rating">
-            {RATING_FILTERS.map((rating) => (
-              <FacetButton
-                key={rating.value}
-                label={rating.label}
-                count={countWithFilters(searched, filters, priceListId, 'ratingMin', rating.value)}
-                selected={filters.ratingMin === rating.value}
-                onClick={() => setFilters((current) => ({ ...current, ratingMin: current.ratingMin === rating.value ? null : rating.value }))}
-              />
+            {facets.ratings.map((rating) => (
+              <FacetButton key={rating.value} label={rating.label} count={rating.count} selected={filters.ratingMin === rating.value} onClick={() => setFilters((current) => ({ ...current, ratingMin: current.ratingMin === rating.value ? null : rating.value }))} />
             ))}
           </FacetGroup>
         </aside>
@@ -211,9 +189,7 @@ export function CatalogView({ onViewRelated }: { onViewRelated: (sku: string) =>
           {products.length === 0 ? (
             <div className="h-full min-h-[280px] bg-surface border border-line rounded-md flex flex-col items-center justify-center text-center p-6">
               <div className="text-[14px] font-semibold text-ink">No catalogue items match</div>
-              <div className="text-[12px] text-ink-muted mt-1 max-w-[320px]">
-                Relax one filter or clear the search to widen the result set.
-              </div>
+              <div className="text-[12px] text-ink-muted mt-1 max-w-[320px]">Relax one filter or clear the search to widen the result set.</div>
               {activeFilters[0] && (
                 <button onClick={() => removeFilter(activeFilters[0].id)} className="mt-3 text-[13px] text-primary hover:underline">
                   Remove "{activeFilters[0].label}"
@@ -223,14 +199,16 @@ export function CatalogView({ onViewRelated }: { onViewRelated: (sku: string) =>
           ) : catalogView === 'tiles' ? (
             <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3">
               {products.map((p) => (
-                <ProductTile key={p.sku} product={p} onViewRelated={onViewRelated} />
+                <ProductTile key={p.sku} product={p} onViewRelated={onViewRelated} onOpenDetail={setDetailSku} />
               ))}
             </div>
           ) : (
-            <CatalogTable products={products} onViewRelated={onViewRelated} sort={sort} onSort={setSort} />
+            <CatalogTable products={products} onViewRelated={onViewRelated} onOpenDetail={setDetailSku} sort={sort} onSort={setSort} />
           )}
         </div>
       </div>
+
+      {detailSku && <ProductDetail sku={detailSku} onClose={() => setDetailSku(null)} onViewRelated={onViewRelated} />}
     </div>
   )
 }
@@ -244,17 +222,7 @@ function FacetGroup({ title, children }: { title: string; children: ReactNode })
   )
 }
 
-function FacetButton({
-  label,
-  count,
-  selected,
-  onClick,
-}: {
-  label: string
-  count: number
-  selected: boolean
-  onClick: () => void
-}) {
+function FacetButton({ label, count, selected, onClick }: { label: string; count: number; selected: boolean; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
@@ -272,11 +240,7 @@ function FacetButton({
 
 function facetOptions(key: FacetKey, products: Product[], filters: Filters, priceListId: PriceListId) {
   const values = Array.from(
-    new Set(
-      (key === 'availability' ? products.map((p) => availabilityOf(p)) : products.map((p) => String(p[key]))).filter(
-        (v) => v && v !== '—',
-      ),
-    ),
+    new Set((key === 'availability' ? products.map((p) => availabilityOf(p)) : products.map((p) => String(p[key]))).filter((v) => v && v !== '—')),
   )
   return values
     .map((value) => ({ value, count: countWithFilters(products, filters, priceListId, key, value) }))
@@ -293,8 +257,7 @@ function matchesFilters(
   const color = overrides?.color !== undefined ? [String(overrides.color)] : filters.color
   const style = overrides?.style !== undefined ? [String(overrides.style)] : filters.style
   const brand = overrides?.brand !== undefined ? [String(overrides.brand)] : filters.brand
-  const availability =
-    overrides?.availability !== undefined ? [String(overrides.availability) as AvailabilityState] : filters.availability
+  const availability = overrides?.availability !== undefined ? [String(overrides.availability) as AvailabilityState] : filters.availability
   const priceBand = (overrides?.priceBand !== undefined ? overrides.priceBand : filters.priceBand) as PriceBandId | null
   const ratingMin = (overrides?.ratingMin !== undefined ? overrides.ratingMin : filters.ratingMin) as number | null
   const price = priceFor(product, priceListId)
@@ -310,13 +273,7 @@ function matchesFilters(
   )
 }
 
-function countWithFilters(
-  products: Product[],
-  filters: Filters,
-  priceListId: PriceListId,
-  key: FacetKey | 'priceBand' | 'ratingMin',
-  value: string | number,
-) {
+function countWithFilters(products: Product[], filters: Filters, priceListId: PriceListId, key: FacetKey | 'priceBand' | 'ratingMin', value: string | number) {
   return products.filter((p) => matchesFilters(p, filters, priceListId, { [key]: value })).length
 }
 
@@ -327,7 +284,7 @@ function sortProducts(products: Product[], sort: CatalogSort, q: string, priceLi
     if (sort === 'price_desc') return priceFor(b, priceListId) - priceFor(a, priceListId)
     if (sort === 'availability') return AVAIL_SORT_WEIGHT[availabilityOf(a)] - AVAIL_SORT_WEIGHT[availabilityOf(b)] || b.rating - a.rating
     if (sort === 'rating') return b.rating - a.rating || priceFor(a, priceListId) - priceFor(b, priceListId)
-    return matchScore(b, term) - matchScore(a, term) || CATALOG.indexOf(a) - CATALOG.indexOf(b)
+    return matchScore(b, term) - matchScore(a, term) || catalogIndex(a.sku) - catalogIndex(b.sku)
   })
 }
 

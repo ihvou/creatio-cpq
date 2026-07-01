@@ -12,22 +12,36 @@ const AVAIL: Record<AvailabilityState, { tone: 'green' | 'yellow' | 'red'; label
   out: { tone: 'red', label: 'Out of stock' },
 }
 
-export function ProductTile({ product, onViewRelated }: { product: Product; onViewRelated: (sku: string) => void }) {
+export function ProductTile({
+  product,
+  onViewRelated,
+  onOpenDetail,
+}: {
+  product: Product
+  onViewRelated: (sku: string) => void
+  onOpenDetail?: (sku: string) => void
+}) {
   const priceListId = useStore((s) => s.priceListId())
   const addLine = useStore((s) => s.addLine)
   const av = AVAIL[availabilityOf(product)]
   return (
     <div className="bg-surface border border-line rounded-md shadow-card p-3 flex flex-col gap-2">
-      <div className="aspect-[4/3] rounded-sm bg-surface-2 border border-line overflow-hidden flex items-center justify-center text-ink-muted">
+      <button
+        onClick={() => onOpenDetail?.(product.sku)}
+        className="aspect-[4/3] rounded-sm bg-surface-2 border border-line overflow-hidden flex items-center justify-center text-ink-muted"
+        aria-label={`View details for ${product.name}`}
+      >
         {product.imageUrl ? (
           <img src={product.imageUrl} alt={product.name} loading="lazy" className="w-full h-full object-cover" />
         ) : (
           <Layers size={28} />
         )}
-      </div>
+      </button>
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <div className="text-[13px] font-medium text-ink truncate">{product.name}</div>
+          <button onClick={() => onOpenDetail?.(product.sku)} className="text-[13px] font-medium text-ink truncate block text-left hover:text-primary">
+            {product.name}
+          </button>
           <div className="text-[12px] text-ink-muted">{product.brand} · {product.sku}</div>
         </div>
         <Chip tone={av.tone}>{av.label}</Chip>
