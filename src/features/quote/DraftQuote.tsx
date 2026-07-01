@@ -13,8 +13,6 @@ import { ConfigCheckDialog } from './ConfigCheckDialog'
 export function DraftQuote({ onRelated }: { onRelated: (sku: string, lineId?: string) => void }) {
   const quote = useStore((s) => s.quote)
   const buyer = useStore((s) => s.buyer)
-  const contact = useStore((s) => s.contact)
-  const verified = useStore((s) => s.verified)
   const priceListId = useStore((s) => s.priceListId())
   const setQty = useStore((s) => s.setQty)
   const removeLine = useStore((s) => s.removeLine)
@@ -37,15 +35,12 @@ export function DraftQuote({ onRelated }: { onRelated: (sku: string, lineId?: st
         <div className="p-4 border-b border-line flex items-start justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-[16px] font-semibold">Quote {quote.number}</span>
+              <span className="text-[18px] font-semibold">Quote {quote.number}</span>
               <Chip tone="neutral">draft</Chip>
-              {buyer?.eligibilityBadge && <Chip tone="green">{buyer.eligibilityBadge}</Chip>}
               {quote.opportunityId && <Chip tone="blue">Opp {quote.opportunityId}</Chip>}
-              {buyer && (verified ? <Chip tone="green">Verified</Chip> : <Chip tone="yellow">Unverified</Chip>)}
             </div>
             <div className="text-[12px] text-ink-muted mt-0.5">
-              {buyer ? buyer.name : 'No buyer — standard pricing'}
-              {buyer?.type === 'company' && contact ? ` · Attn: ${contact.name}` : ''}
+              {buyer ? (priceListId === 'buyer' ? 'Pro pricing applied' : 'Standard pricing') : 'No buyer — standard pricing'}
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">

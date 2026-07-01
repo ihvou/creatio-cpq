@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { UserPlus, ChevronDown, X, ArrowLeft, Check, ShieldCheck } from 'lucide-react'
+import { UserPlus, ChevronDown, X, ArrowLeft, ShieldCheck } from 'lucide-react'
 import type { Account, Contact } from '@/lib/types'
 import { useStore } from '@/lib/store'
 import { searchAccounts, contactsForAccount } from '@/data/accounts'
@@ -26,8 +26,9 @@ function Avatar({ photo, name, size }: { photo?: string; name: string; size: num
   )
 }
 
-// Top-right header action (SPEC §6.1). Identify / register a buyer (business or
-// individual), then validate the persona — visually (photo) or with a code (OTP).
+// CPQ workspace-header control (SPEC §6.1) — the buyer is a CPQ-domain actor, not
+// platform chrome. Identify / register a buyer (business or individual), then
+// validate the persona — visually (photo) or with a code (OTP).
 export function BuyerIdentify() {
   const buyer = useStore((s) => s.buyer)
   const buyerContact = useStore((s) => s.contact)
@@ -67,14 +68,27 @@ export function BuyerIdentify() {
 
   return (
     <div className="relative">
-      <button onClick={() => setOpen((v) => !v)} className="flex items-center gap-2 h-8 pl-1.5 pr-3 rounded-md bg-white/10 hover:bg-white/15 text-[13px]">
-        {buyer ? <Avatar photo={buyerContact?.photo} name={buyer.name} size={22} /> : <UserPlus size={15} className="ml-1" />}
-        {buyer ? (
-          <span className="text-white flex items-center gap-1">{buyer.name}{verified && <Check size={13} className="text-[var(--c-success)]" />}</span>
-        ) : (
-          <span className="text-white/80">Identify buyer</span>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className={cn(
+          'flex items-center gap-2 h-9 pl-1.5 pr-2.5 rounded-md border text-[13px] transition-colors',
+          buyer ? 'border-line bg-surface hover:bg-surface-2' : 'border-dashed border-line bg-surface hover:bg-surface-2 text-ink-secondary',
         )}
-        <ChevronDown size={14} />
+      >
+        {buyer ? <Avatar photo={buyerContact?.photo} name={buyer.name} size={24} /> : <UserPlus size={15} className="ml-1 text-ink-muted" />}
+        {buyer ? (
+          <span className="text-ink flex items-center gap-1.5">
+            {buyer.name}
+            {verified ? (
+              <ShieldCheck size={14} className="text-[var(--c-success)]" />
+            ) : (
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--c-warning)]" title="Unverified buyer" aria-label="Unverified buyer" />
+            )}
+          </span>
+        ) : (
+          <span>Identify buyer</span>
+        )}
+        <ChevronDown size={14} className="text-ink-muted" />
       </button>
 
       {open && (

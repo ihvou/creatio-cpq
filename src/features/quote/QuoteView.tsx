@@ -60,11 +60,11 @@ export function QuoteView() {
         <div className="flex items-start justify-between p-5 border-b border-line">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-[20px] font-semibold">Quote {quote.number}</span>
+              <span className="text-[18px] font-semibold">Quote {quote.number}</span>
               <Chip tone={STATUS_TONE[quote.status]}>{quote.status}</Chip>
             </div>
             <div className="text-[12px] text-ink-muted mt-1">
-              {buyer ? buyer.name : 'No buyer — standard pricing'}
+              {buyer ? `Prepared for ${buyer.name}` : 'No buyer — standard pricing'}
               {contact ? ` · ${contact.name}` : ''} · valid until {quote.validUntil}
             </div>
             <div className="mt-2 flex flex-wrap gap-1.5">

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/primitives'
 import { ProcessBar } from '@/components/shell/ProcessBar'
 import { AddSearchBar } from './AddSearchBar'
 import { BrowsePanel } from './BrowsePanel'
+import { BuyerIdentify } from '@/components/shell/BuyerIdentify'
 import { DraftQuote } from '@/features/quote/DraftQuote'
 import { QuoteView } from '@/features/quote/QuoteView'
 import { OrderConfirm } from '@/features/quote/OrderConfirm'
@@ -30,6 +31,8 @@ export function Workspace() {
           {view === 'catalog' ? 'Quote Draft' : view === 'quote' ? 'Quote' : 'Order'}
         </h1>
         <ProcessBar />
+        <div className="flex-1" />
+        <BuyerIdentify />
       </div>
 
       {view === 'catalog' &&

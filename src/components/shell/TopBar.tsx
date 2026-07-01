@@ -1,7 +1,8 @@
 import { Menu, Search, Bell, HelpCircle, Settings, Sparkles } from 'lucide-react'
 import { useStore } from '@/lib/store'
-import { BuyerIdentify } from './BuyerIdentify'
 
+// Platform shell chrome only (global to every Creatio module): nav toggle, global
+// search, and system actions. Domain actors (e.g. the CPQ buyer) live in the module.
 export function TopBar() {
   const toggleNav = useStore((s) => s.toggleNav)
   return (
@@ -13,7 +14,6 @@ export function TopBar() {
         <Search size={15} /> <span>What can I find for you?</span>
       </div>
       <div className="flex-1" />
-      <BuyerIdentify />
       <div className="flex items-center gap-1 text-white/80">
         <button className="p-1.5 rounded hover:bg-white/10" aria-label="AI"><Sparkles size={17} /></button>
         <button className="p-1.5 rounded hover:bg-white/10" aria-label="Notifications"><Bell size={17} /></button>
