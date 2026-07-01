@@ -1,6 +1,8 @@
-// Real category photos via loremflickr (free, keyword-matched). One tighter
-// keyword per category for better relevance than multi-tag; components fall back
-// to the category icon on load error. Deterministic per SKU so it's stable.
+// Real category photos via loremflickr (free, keyword-matched, fast). Pollinations
+// AI generation was tried for better relevance but is far too slow for a ~290-item
+// grid (0/291 loaded in 28s, all requests hang). loremflickr loads instantly; the
+// trade-off is Flickr-tag relevance noise. Components fall back to the category
+// icon on load error. Deterministic per SKU so images are stable.
 const CATEGORY_KW: Record<string, string> = {
   Tile: 'tile',
   Flooring: 'flooring',
