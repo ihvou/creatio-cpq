@@ -75,7 +75,7 @@ export function QuoteView() {
             </div>
           </div>
           <div className="flex gap-2 no-print">
-            <Button onClick={() => setView('catalog')}><ArrowLeft size={14} /> Catalogue</Button>
+            <Button onClick={() => setView('catalog')}><ArrowLeft size={14} /> Quote Draft</Button>
             <Button onClick={() => window.print()}><Printer size={14} /> Print</Button>
             <Button onClick={() => setShareOpen(true)}><Share2 size={14} /> Share</Button>
             <Button variant="primary" onClick={onCreateOrder} disabled={quote.lines.length === 0}>

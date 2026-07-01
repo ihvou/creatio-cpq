@@ -48,9 +48,14 @@ export function DraftQuote({ onRelated }: { onRelated: (sku: string, lineId?: st
               {buyer?.type === 'company' && contact ? ` · Attn: ${contact.name}` : ''}
             </div>
           </div>
-          {quote.lines.length > 0 && (
-            <Button onClick={resetDraft}><RotateCcw size={13} /> New quote</Button>
-          )}
+          <div className="flex items-center gap-2 shrink-0">
+            {quote.lines.length > 0 && (
+              <Button onClick={resetDraft}><RotateCcw size={13} /> New quote</Button>
+            )}
+            <Button variant="primary" onClick={onGenerate} disabled={quote.lines.length === 0}>
+              <FileText size={14} /> Generate quote
+            </Button>
+          </div>
         </div>
 
         <div className="flex-1 min-h-0">
@@ -116,16 +121,11 @@ export function DraftQuote({ onRelated }: { onRelated: (sku: string, lineId?: st
           )}
         </div>
 
-        <div className="p-4 border-t border-line flex items-center justify-between">
-          <div>
-            <div className="text-[12px] text-ink-muted">
-              Subtotal{savings > 0 && <span className="text-[var(--c-success)]"> · you save {money(savings)} with Pro pricing</span>}
-            </div>
-            <div className="text-[20px] font-semibold">{money(subtotal)}</div>
+        <div className="p-4 border-t border-line">
+          <div className="text-[12px] text-ink-muted">
+            Subtotal{savings > 0 && <span className="text-[var(--c-success)]"> · you save {money(savings)} with Pro pricing</span>}
           </div>
-          <Button variant="primary" onClick={onGenerate} disabled={quote.lines.length === 0}>
-            <FileText size={14} /> Generate quote
-          </Button>
+          <div className="text-[20px] font-semibold">{money(subtotal)}</div>
         </div>
       </div>
 

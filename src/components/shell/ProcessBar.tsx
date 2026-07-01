@@ -2,7 +2,7 @@ import { useStore } from '@/lib/store'
 import { cn } from '@/lib/util'
 
 const STAGES: { key: 'catalog' | 'quote' | 'order'; label: string }[] = [
-  { key: 'catalog', label: 'Catalogue' },
+  { key: 'catalog', label: 'Quote Draft' },
   { key: 'quote', label: 'Quote' },
   { key: 'order', label: 'Order' },
 ]

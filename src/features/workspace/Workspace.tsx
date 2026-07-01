@@ -25,8 +25,10 @@ export function Workspace() {
 
   return (
     <div className="h-full flex flex-col p-4 gap-3">
-      <div className="flex items-center justify-between no-print">
-        <h1 className="text-[18px] font-semibold text-ink">CPQ · Quote builder</h1>
+      <div className="flex items-center gap-4 no-print">
+        <h1 className="text-[18px] font-semibold text-ink">
+          {view === 'catalog' ? 'Quote Draft' : view === 'quote' ? 'Quote' : 'Order'}
+        </h1>
         <ProcessBar />
       </div>
 
