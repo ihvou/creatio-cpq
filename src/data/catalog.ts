@@ -50,6 +50,44 @@ function imageFor(_category: string, _sku: string): string {
   return ''
 }
 
+// Category-specific spec attributes so detail / compare are meaningful and
+// compatibility-relevant (e.g. tile PEI, pipe diameter, wire gauge).
+function specsFor(category: string, sku: string, style: string): Record<string, string> {
+  const p = (arr: string[], salt: string) => arr[Math.floor(hash01(sku + salt) * arr.length)]
+  switch (category) {
+    case 'Tile':
+      return { size: p(['30×30 cm', '45×45 cm', '60×60 cm'], 'sz'), finish: p(['Matte', 'Gloss', 'Textured'], 'fn'), thickness: p(['7 mm', '8 mm', '9 mm', '10 mm'], 'th'), rating: p(['PEI II', 'PEI III', 'PEI IV'], 'pei') }
+    case 'Paint':
+      return { sheen: style, coverage: '34 m² / gal', volume: '1 gal', base: p(['White base', 'Deep base', 'Medium base'], 'bs') }
+    case 'Grout':
+      return { type: style, jointWidth: p(['1–6 mm', '2–12 mm', '1–8 mm'], 'jw'), waterResistant: p(['Yes', 'No'], 'wr') }
+    case 'Adhesive':
+      return { type: style, weight: '20 kg', openTime: p(['15 min', '20 min', '30 min'], 'ot'), coverage: '4–5 m² / bag' }
+    case 'Drywall':
+      return { size: '1.2 × 2.4 m', thickness: p(['9.5 mm', '12.5 mm', '15 mm'], 'th'), edge: 'Tapered' }
+    case 'Lumber':
+      return { dimension: p(['2×4 in', '2×6 in', '1×4 in'], 'dm'), length: p(['8 ft', '10 ft', '12 ft'], 'ln'), grade: p(['#1', '#2', 'Select'], 'gr') }
+    case 'Fasteners':
+      return { size: p(['#8 × 1.5 in', '#8 × 2 in', '#10 × 3 in'], 'sz'), qty: '200 pcs', drive: p(['Phillips', 'Square', 'Star'], 'dr') }
+    case 'Tool':
+      return { material: p(['Steel', 'Stainless', 'Carbon steel'], 'mt'), grip: p(['Rubber', 'Bi-material', 'Wood'], 'gp') }
+    case 'Plumbing':
+      return { material: p(['PVC', 'CPVC', 'PEX'], 'mt'), diameter: p(['1/2 in', '3/4 in', '1 in'], 'di'), connection: p(['Solvent weld', 'Push-fit', 'Threaded'], 'cn'), pressure: '150 psi' }
+    case 'Electrical':
+      return { gauge: p(['12 AWG', '14 AWG', '10 AWG'], 'ga'), length: '50 m', rating: '600 V', jacket: p(['THHN', 'Romex', 'XHHW'], 'jk') }
+    case 'Insulation':
+      return { rValue: p(['R-13', 'R-19', 'R-30'], 'rv'), material: style, coverage: '8 m² / pack' }
+    case 'Flooring':
+      return { thickness: p(['8 mm', '10 mm', '12 mm'], 'th'), wearLayer: p(['AC3', 'AC4', 'AC5'], 'wl'), install: 'Click-lock' }
+    case 'Sealant':
+      return { type: style, cureTime: p(['12 h', '24 h', '48 h'], 'ct'), useArea: p(['Wet areas', 'Interior', 'Exterior'], 'ua') }
+    case 'Hardware':
+      return { finish: style, material: p(['Zinc', 'Stainless', 'Brass'], 'mt'), mount: 'Screw' }
+    default:
+      return { note: 'General building material' }
+  }
+}
+
 // ---- Curated hero / intake items (stable SKUs — do not rename) ----
 const HEROES: Product[] = [
   {
@@ -207,7 +245,7 @@ function generate(): Product[] {
         color,
         style,
         imageUrl: imageFor(t.category, sku),
-        specs: { tier: tier === 3 ? 'Best' : tier === 2 ? 'Better' : 'Good', pack: `${t.packSize} / ${t.unit}` },
+        specs: specsFor(t.category, sku, style),
         unit: t.unit,
         packSize: t.packSize,
         coverage: t.coverage,

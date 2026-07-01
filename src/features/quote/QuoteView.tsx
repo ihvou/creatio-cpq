@@ -4,8 +4,20 @@ import { useStore, selectSubtotal, selectSavings } from '@/lib/store'
 import { readinessFor } from '@/lib/readiness'
 import type { ReadinessIssue } from '@/lib/types'
 import { money } from '@/lib/format'
+import { cn } from '@/lib/util'
 import { Button, Chip } from '@/components/ui/primitives'
 import { ShareDialog } from './ShareDialog'
+
+const CURRENCY = 'USD'
+
+function SummaryRow({ label, value, muted, tone }: { label: string; value: string; muted?: boolean; tone?: 'success' }) {
+  return (
+    <div className={cn('flex justify-between py-0.5', tone === 'success' && 'text-[var(--c-success)]')}>
+      <span className={muted ? 'text-ink-muted' : 'text-ink-secondary'}>{label}</span>
+      <span className={muted ? 'text-ink-muted' : ''}>{value}</span>
+    </div>
+  )
+}
 
 const ISSUE_LABEL: Record<ReadinessIssue, string> = {
   unavailable: 'Unavailable / not enough stock',
@@ -54,9 +66,11 @@ export function QuoteView() {
               {buyer ? buyer.name : 'No buyer — standard pricing'}
               {contact ? ` · ${contact.name}` : ''} · valid until {quote.validUntil}
             </div>
-            {buyer?.eligibilityBadge && (
-              <div className="mt-2"><Chip tone="green">{buyer.eligibilityBadge}</Chip></div>
-            )}
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {buyer?.eligibilityBadge && <Chip tone="green">{buyer.eligibilityBadge}</Chip>}
+              {quote.opportunityId && <Chip tone="blue">Source: Opp {quote.opportunityId}</Chip>}
+              {quote.status !== 'draft' && <Chip tone="neutral">Prices locked on share</Chip>}
+            </div>
           </div>
           <div className="flex gap-2 no-print">
             <Button onClick={() => setView('catalog')}><ArrowLeft size={14} /> Catalogue</Button>
@@ -118,20 +132,17 @@ export function QuoteView() {
           </table>
 
           <div className="flex justify-end mt-3">
-            <div className="w-[240px]">
-              {savings > 0 && (
-                <div className="flex justify-between text-[12px] text-[var(--c-success)] mb-1">
-                  <span>Pro pricing savings</span>
-                  <span>−{money(savings)}</span>
-                </div>
-              )}
-              <div className="flex justify-between text-[15px] font-semibold">
-                <span>Subtotal</span>
+            <div className="w-[300px] text-[13px]">
+              <SummaryRow label="Subtotal" value={money(subtotal)} />
+              {savings > 0 && <SummaryRow label="Pro pricing savings" value={`−${money(savings)}`} tone="success" />}
+              <SummaryRow label="Estimated tax" value="Calculated at order" muted />
+              <SummaryRow label="Delivery" value="Pickup or delivery — set at order" muted />
+              <div className="flex justify-between font-semibold text-[15px] border-t border-line mt-1 pt-1">
+                <span>Total ({CURRENCY})</span>
                 <span>{money(subtotal)}</span>
               </div>
-              <p className="text-[11px] text-ink-muted mt-1">
-                Prices from {buyer ? 'the account price list' : 'the standard price list'}. Taxes and fees out of scope.
-              </p>
+              <SummaryRow label="Valid until" value={quote.validUntil} muted />
+              <SummaryRow label="Payment terms" value={buyer ? 'Net 30 (Pro account)' : 'Due at order'} muted />
             </div>
           </div>
 

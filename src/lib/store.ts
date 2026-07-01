@@ -31,6 +31,7 @@ function newQuote(): Quote {
     number: quoteNumber(),
     accountId: null,
     contactId: null,
+    opportunityId: null,
     status: 'draft',
     validUntil: plus30Days(),
     notes: '',
@@ -95,6 +96,7 @@ export const useStore = create<StoreState>((set, get) => ({
     const buyer = accountId ? ACCOUNTS.find((a) => a.id === accountId) ?? null : null
     const contact = buyer ? contactsForAccount(buyer.id)[0] ?? null : null
     const priceListId: PriceListId = buyer?.priceListId ?? 'default'
+    const opportunityId = buyer ? `OPP-2026-${buyer.externalId.match(/\d{4}$/)?.[0] ?? '0142'}` : null
     set((s) => ({
       buyer,
       contact,
@@ -102,6 +104,7 @@ export const useStore = create<StoreState>((set, get) => ({
         ...s.quote,
         accountId: buyer?.id ?? null,
         contactId: contact?.id ?? null,
+        opportunityId,
         lines: repriceLines(s.quote.lines, priceListId),
       },
     }))
@@ -118,7 +121,7 @@ export const useStore = create<StoreState>((set, get) => ({
       priceListId: 'default',
       vip: false,
     }
-    set((s) => ({ buyer, contact: null, quote: { ...s.quote, accountId: buyer.id, contactId: null } }))
+    set((s) => ({ buyer, contact: null, quote: { ...s.quote, accountId: buyer.id, contactId: null, opportunityId: 'OPP-2026-NEW' } }))
   },
 
   addLine: (sku, qty = 1) => {
@@ -210,7 +213,7 @@ export const useStore = create<StoreState>((set, get) => ({
   // Clear the draft and start fresh (keeps the identified buyer). Review finding 1.
   resetDraft: () =>
     set((s) => ({
-      quote: { ...newQuote(), accountId: s.buyer?.id ?? null, contactId: s.contact?.id ?? null },
+      quote: { ...newQuote(), accountId: s.buyer?.id ?? null, contactId: s.contact?.id ?? null, opportunityId: s.quote.opportunityId },
       view: 'catalog',
     })),
 }))

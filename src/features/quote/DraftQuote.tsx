@@ -6,6 +6,8 @@ import { money } from '@/lib/format'
 import { Button, Chip } from '@/components/ui/primitives'
 import { ProductThumb } from '@/components/ui/ProductThumb'
 import { ProductDetail } from '@/features/catalog/ProductDetail'
+import { configCheck } from '@/lib/configCheck'
+import { ConfigCheckDialog } from './ConfigCheckDialog'
 
 // List-first canvas (SPEC §7): the draft quote IS the working surface.
 export function DraftQuote({ onRelated }: { onRelated: (sku: string, lineId?: string) => void }) {
@@ -19,6 +21,13 @@ export function DraftQuote({ onRelated }: { onRelated: (sku: string, lineId?: st
   const subtotal = selectSubtotal(quote.lines)
   const savings = selectSavings(quote.lines, priceListId)
   const [detailLine, setDetailLine] = useState<{ sku: string; lineId: string } | null>(null)
+  const [showCheck, setShowCheck] = useState(false)
+
+  function onGenerate() {
+    const { missing, blocks } = configCheck(quote.lines)
+    if (missing.length || blocks.length) setShowCheck(true)
+    else generateQuote()
+  }
 
   return (
     <div className="flex-1 min-h-0 overflow-auto">
@@ -29,6 +38,7 @@ export function DraftQuote({ onRelated }: { onRelated: (sku: string, lineId?: st
               <span className="text-[16px] font-semibold">Quote {quote.number}</span>
               <Chip tone="neutral">draft</Chip>
               {buyer?.eligibilityBadge && <Chip tone="green">{buyer.eligibilityBadge}</Chip>}
+              {quote.opportunityId && <Chip tone="blue">Opp {quote.opportunityId}</Chip>}
             </div>
             <div className="text-[12px] text-ink-muted mt-0.5">{buyer ? buyer.name : 'No buyer — standard pricing'}</div>
           </div>
@@ -107,7 +117,7 @@ export function DraftQuote({ onRelated }: { onRelated: (sku: string, lineId?: st
             </div>
             <div className="text-[20px] font-semibold">{money(subtotal)}</div>
           </div>
-          <Button variant="primary" onClick={generateQuote} disabled={quote.lines.length === 0}>
+          <Button variant="primary" onClick={onGenerate} disabled={quote.lines.length === 0}>
             <FileText size={14} /> Generate quote
           </Button>
         </div>
@@ -120,6 +130,7 @@ export function DraftQuote({ onRelated }: { onRelated: (sku: string, lineId?: st
           onViewRelated={(sku) => onRelated(sku, detailLine.lineId)}
         />
       )}
+      {showCheck && <ConfigCheckDialog onClose={() => setShowCheck(false)} onGenerate={generateQuote} />}
     </div>
   )
 }

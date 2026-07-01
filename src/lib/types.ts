@@ -83,6 +83,7 @@ export interface Quote {
   number: string // Q-2026-0001
   accountId: string | null
   contactId: string | null
+  opportunityId: string | null // CRM-native: quote anchored to an Opportunity (mock)
   status: QuoteStatus
   validUntil: string // ISO date (yyyy-mm-dd)
   notes: string
