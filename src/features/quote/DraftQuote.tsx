@@ -13,6 +13,7 @@ import { ConfigCheckDialog } from './ConfigCheckDialog'
 export function DraftQuote({ onRelated }: { onRelated: (sku: string, lineId?: string) => void }) {
   const quote = useStore((s) => s.quote)
   const buyer = useStore((s) => s.buyer)
+  const contact = useStore((s) => s.contact)
   const verified = useStore((s) => s.verified)
   const priceListId = useStore((s) => s.priceListId())
   const setQty = useStore((s) => s.setQty)
@@ -21,7 +22,7 @@ export function DraftQuote({ onRelated }: { onRelated: (sku: string, lineId?: st
   const resetDraft = useStore((s) => s.resetDraft)
   const subtotal = selectSubtotal(quote.lines)
   const savings = selectSavings(quote.lines, priceListId)
-  const [detailLine, setDetailLine] = useState<{ sku: string; lineId: string } | null>(null)
+  const [detail, setDetail] = useState<{ sku: string; lineId?: string } | null>(null)
   const [showCheck, setShowCheck] = useState(false)
 
   function onGenerate() {
@@ -42,7 +43,10 @@ export function DraftQuote({ onRelated }: { onRelated: (sku: string, lineId?: st
               {quote.opportunityId && <Chip tone="blue">Opp {quote.opportunityId}</Chip>}
               {buyer && (verified ? <Chip tone="green">Verified</Chip> : <Chip tone="yellow">Unverified</Chip>)}
             </div>
-            <div className="text-[12px] text-ink-muted mt-0.5">{buyer ? buyer.name : 'No buyer — standard pricing'}</div>
+            <div className="text-[12px] text-ink-muted mt-0.5">
+              {buyer ? buyer.name : 'No buyer — standard pricing'}
+              {buyer?.type === 'company' && contact ? ` · Attn: ${contact.name}` : ''}
+            </div>
           </div>
           {quote.lines.length > 0 && (
             <Button onClick={resetDraft}><RotateCcw size={13} /> New quote</Button>
@@ -73,12 +77,12 @@ export function DraftQuote({ onRelated }: { onRelated: (sku: string, lineId?: st
                       <td>
                         <div className="flex items-center gap-2.5">
                           {p && (
-                            <button onClick={() => setDetailLine({ sku: l.sku, lineId: l.id })} aria-label={`View details for ${l.name}`}>
+                            <button onClick={() => setDetail({ sku: l.sku, lineId: l.id })} aria-label={`View details for ${l.name}`}>
                               <ProductThumb product={p} size={14} className="w-9 h-9 rounded-sm shrink-0" />
                             </button>
                           )}
                           <div className="min-w-0">
-                            <button onClick={() => setDetailLine({ sku: l.sku, lineId: l.id })} className="text-ink text-left hover:text-primary block truncate">{l.name}</button>
+                            <button onClick={() => setDetail({ sku: l.sku, lineId: l.id })} className="text-ink text-left hover:text-primary block truncate">{l.name}</button>
                             <div className="text-[11px] text-ink-muted">
                               {l.sku}
                               {l.availabilityState === 'unavailable' && <span className="text-[var(--c-danger)]"> · unavailable</span>}
@@ -125,14 +129,21 @@ export function DraftQuote({ onRelated }: { onRelated: (sku: string, lineId?: st
         </div>
       </div>
 
-      {detailLine && (
+      {detail && (
         <ProductDetail
-          sku={detailLine.sku}
-          onClose={() => setDetailLine(null)}
-          onViewRelated={(sku) => onRelated(sku, detailLine.lineId)}
+          sku={detail.sku}
+          onClose={() => setDetail(null)}
+          onViewRelated={(sku) => onRelated(sku, detail.lineId)}
         />
       )}
-      {showCheck && <ConfigCheckDialog onClose={() => setShowCheck(false)} onGenerate={generateQuote} />}
+      {showCheck && (
+        <ConfigCheckDialog
+          onClose={() => setShowCheck(false)}
+          onGenerate={generateQuote}
+          onOpenDetail={(sku) => setDetail({ sku })}
+          onViewRelated={(sku) => onRelated(sku)}
+        />
+      )}
     </div>
   )
 }

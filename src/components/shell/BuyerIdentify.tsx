@@ -1,18 +1,36 @@
 import { useState } from 'react'
 import { UserPlus, ChevronDown, X, ArrowLeft, Check, ShieldCheck } from 'lucide-react'
-import type { Account } from '@/lib/types'
+import type { Account, Contact } from '@/lib/types'
 import { useStore } from '@/lib/store'
 import { searchAccounts, contactsForAccount } from '@/data/accounts'
+import { cn } from '@/lib/util'
 import { Button, Chip } from '@/components/ui/primitives'
 
 function gen4() {
   return String(Math.floor(1000 + Math.random() * 9000))
 }
 
-// Top-right header action (SPEC §6.1). Identify / register a buyer, then validate
-// the persona — visually (contact photo) or with a code (imitated OTP).
+function Avatar({ photo, name, size }: { photo?: string; name: string; size: number }) {
+  const [broken, setBroken] = useState(false)
+  return (
+    <div
+      className="rounded-full bg-surface-2 border border-line flex items-center justify-center overflow-hidden shrink-0 text-ink-muted font-medium"
+      style={{ width: size, height: size, fontSize: Math.round(size * 0.42) }}
+    >
+      {photo && !broken ? (
+        <img src={photo} alt="" onError={() => setBroken(true)} className="w-full h-full object-cover" />
+      ) : (
+        (name || '?').slice(0, 1).toUpperCase()
+      )}
+    </div>
+  )
+}
+
+// Top-right header action (SPEC §6.1). Identify / register a buyer (business or
+// individual), then validate the persona — visually (photo) or with a code (OTP).
 export function BuyerIdentify() {
   const buyer = useStore((s) => s.buyer)
+  const buyerContact = useStore((s) => s.contact)
   const verified = useStore((s) => s.verified)
   const setBuyer = useStore((s) => s.setBuyer)
   const registerBuyer = useStore((s) => s.registerBuyer)
@@ -20,16 +38,18 @@ export function BuyerIdentify() {
   const [open, setOpen] = useState(false)
   const [mode, setMode] = useState<'search' | 'register' | 'verify'>('search')
   const [q, setQ] = useState('')
+  const [kind, setKind] = useState<'company' | 'individual'>('company')
   const [reg, setReg] = useState({ name: '', phone: '', email: '' })
   const [sel, setSel] = useState<Account | null>(null)
   const [sentCode, setSentCode] = useState<string | null>(null)
   const [codeInput, setCodeInput] = useState('')
   const results = searchAccounts(q)
-  const contact = sel ? contactsForAccount(sel.id)[0] : null
+  const selContact: Contact | undefined = sel ? contactsForAccount(sel.id)[0] : undefined
 
   function close() {
     setOpen(false)
     setMode('search')
+    setKind('company')
     setReg({ name: '', phone: '', email: '' })
     setQ('')
     setSel(null)
@@ -47,8 +67,8 @@ export function BuyerIdentify() {
 
   return (
     <div className="relative">
-      <button onClick={() => setOpen((v) => !v)} className="flex items-center gap-2 h-8 px-3 rounded-md bg-white/10 hover:bg-white/15 text-[13px]">
-        <UserPlus size={15} />
+      <button onClick={() => setOpen((v) => !v)} className="flex items-center gap-2 h-8 pl-1.5 pr-3 rounded-md bg-white/10 hover:bg-white/15 text-[13px]">
+        {buyer ? <Avatar photo={buyerContact?.photo} name={buyer.name} size={22} /> : <UserPlus size={15} className="ml-1" />}
         {buyer ? (
           <span className="text-white flex items-center gap-1">{buyer.name}{verified && <Check size={13} className="text-[var(--c-success)]" />}</span>
         ) : (
@@ -73,17 +93,25 @@ export function BuyerIdentify() {
                 aria-label="Search buyer"
                 className="w-full h-9 rounded-sm border border-line px-3 text-[13px] outline-none focus:border-primary"
               />
-              <div className="mt-2 flex flex-col gap-1 max-h-[200px] overflow-auto">
-                {results.map((a) => (
-                  <button key={a.id} onClick={() => selectAccount(a)} className="text-left p-2 rounded-sm hover:bg-surface-2 border border-transparent">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-[13px] font-medium">{a.name}</span>
-                      {a.vip && <Chip tone="neutral">VIP</Chip>}
-                    </div>
-                    <div className="text-[12px] text-ink-muted">{a.phone} · {a.externalId}</div>
-                    {a.eligibilityBadge && <div className="mt-1"><Chip tone="green">{a.eligibilityBadge}</Chip></div>}
-                  </button>
-                ))}
+              <div className="mt-2 flex flex-col gap-1 max-h-[220px] overflow-auto">
+                {results.map((a) => {
+                  const c = contactsForAccount(a.id)[0]
+                  return (
+                    <button key={a.id} onClick={() => selectAccount(a)} className="flex items-center gap-2 text-left p-2 rounded-sm hover:bg-surface-2 border border-transparent">
+                      <Avatar photo={c?.photo} name={a.name} size={34} />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[13px] font-medium truncate">{a.name}</span>
+                          {a.vip && <Chip tone="neutral">VIP</Chip>}
+                        </div>
+                        <div className="text-[12px] text-ink-muted truncate">
+                          {a.type === 'company' && c ? `${c.name} · ` : ''}{a.phone}
+                        </div>
+                        {a.eligibilityBadge && <div className="mt-1"><Chip tone="green">{a.eligibilityBadge}</Chip></div>}
+                      </div>
+                    </button>
+                  )
+                })}
                 {results.length === 0 && <div className="text-[12px] text-ink-muted p-2">No match.</div>}
               </div>
               <button onClick={() => setMode('register')} className="mt-2 w-full text-[12px] text-primary text-left">+ Register a new buyer</button>
@@ -99,13 +127,20 @@ export function BuyerIdentify() {
                 <button onClick={() => setMode('search')} aria-label="Back"><ArrowLeft size={15} className="text-ink-muted" /></button>
                 <span className="text-[13px] font-medium">Register a new buyer</span>
               </div>
+              <div className="flex gap-1 mb-2">
+                {(['company', 'individual'] as const).map((k) => (
+                  <button key={k} onClick={() => setKind(k)} className={cn('flex-1 h-8 rounded-sm text-[12px] border', kind === k ? 'border-primary text-primary bg-[var(--c-info-bg)]' : 'border-line text-ink-secondary hover:bg-surface-2')}>
+                    {k === 'company' ? 'Business' : 'Individual'}
+                  </button>
+                ))}
+              </div>
               <div className="flex flex-col gap-2">
-                <input autoFocus value={reg.name} onChange={(e) => setReg({ ...reg, name: e.target.value })} placeholder="Company or contact name" aria-label="Buyer name" className="w-full h-9 rounded-sm border border-line px-3 text-[13px] outline-none focus:border-primary" />
+                <input autoFocus value={reg.name} onChange={(e) => setReg({ ...reg, name: e.target.value })} placeholder={kind === 'company' ? 'Business name' : 'Full name'} aria-label="Buyer name" className="w-full h-9 rounded-sm border border-line px-3 text-[13px] outline-none focus:border-primary" />
                 <input value={reg.phone} onChange={(e) => setReg({ ...reg, phone: e.target.value })} placeholder="Phone" aria-label="Phone" className="w-full h-9 rounded-sm border border-line px-3 text-[13px] outline-none focus:border-primary" />
                 <input value={reg.email} onChange={(e) => setReg({ ...reg, email: e.target.value })} placeholder="Email" aria-label="Email" className="w-full h-9 rounded-sm border border-line px-3 text-[13px] outline-none focus:border-primary" />
               </div>
               <p className="text-[11px] text-ink-muted mt-2">New buyers use standard pricing until a Pro account is linked.</p>
-              <Button variant="primary" className="w-full justify-center mt-2" disabled={!reg.name.trim()} onClick={() => { registerBuyer({ name: reg.name.trim(), phone: reg.phone.trim(), email: reg.email.trim() }); close() }}>
+              <Button variant="primary" className="w-full justify-center mt-2" disabled={!reg.name.trim()} onClick={() => { registerBuyer({ name: reg.name.trim(), phone: reg.phone.trim(), email: reg.email.trim(), type: kind }); close() }}>
                 Create buyer
               </Button>
             </>
@@ -118,16 +153,10 @@ export function BuyerIdentify() {
                 <span className="text-[13px] font-medium">Verify identity</span>
               </div>
               <div className="flex items-center gap-3">
-                {contact?.photo ? (
-                  <img src={contact.photo} alt={contact.name} className="w-14 h-14 rounded-full object-cover border border-line" />
-                ) : (
-                  <div className="w-14 h-14 rounded-full bg-surface-2 border border-line flex items-center justify-center text-[15px] font-medium text-ink-muted">
-                    {(contact?.name ?? sel.name).slice(0, 1)}
-                  </div>
-                )}
+                <Avatar photo={selContact?.photo} name={selContact?.name ?? sel.name} size={56} />
                 <div className="min-w-0">
-                  <div className="text-[14px] font-medium">{contact?.name ?? sel.name}</div>
-                  <div className="text-[12px] text-ink-muted">{sel.name}</div>
+                  <div className="text-[14px] font-medium">{selContact?.name ?? sel.name}</div>
+                  {sel.type === 'company' && <div className="text-[12px] text-ink-muted">Contact · {sel.name}</div>}
                   <div className="text-[12px] text-ink-muted">{sel.phone}</div>
                 </div>
               </div>

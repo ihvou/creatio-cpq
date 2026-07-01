@@ -76,9 +76,7 @@ export function CaptureListDialog({ onClose }: { onClose: () => void }) {
             <div className="flex flex-col items-center gap-2 shrink-0">
               <div className="p-3 bg-white border border-line rounded-md"><QRCodeSVG value={url} size={130} /></div>
               <div className="text-[12px] text-ink-muted text-center w-[150px]">
-                {SUPABASE_READY
-                  ? "Scan to paste from the buyer's phone."
-                  : 'Open the link in another tab to paste (add Supabase for real phones).'}
+                Scan to paste from the buyer's phone.
               </div>
             </div>
             <div className="flex-1 min-w-0">

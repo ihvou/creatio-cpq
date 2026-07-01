@@ -45,7 +45,7 @@ export interface Product {
 export interface Account {
   id: string
   name: string
-  type: string
+  type: 'company' | 'individual'
   phone: string
   email: string
   externalId: string // Pro ID

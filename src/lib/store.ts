@@ -61,7 +61,7 @@ interface StoreState {
 
   // buyer (available anytime — re-prices the whole quote; SPEC §6.1, §9)
   setBuyer: (accountId: string | null) => void
-  registerBuyer: (input: { name: string; phone?: string; email?: string }) => void
+  registerBuyer: (input: { name: string; phone?: string; email?: string; type?: 'company' | 'individual' }) => void
   verifyBuyer: () => void
 
   // line operations
@@ -118,7 +118,7 @@ export const useStore = create<StoreState>((set, get) => ({
     const buyer: Account = {
       id: genId('acc'),
       name: input.name,
-      type: 'company',
+      type: input.type ?? 'individual',
       phone: input.phone ?? '',
       email: input.email ?? '',
       externalId: '',

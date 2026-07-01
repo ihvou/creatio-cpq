@@ -1,4 +1,4 @@
-import { X, AlertTriangle, AlertOctagon, Plus, Trash2, Check } from 'lucide-react'
+import { X, AlertTriangle, AlertOctagon, Plus, Trash2, Check, Layers } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { configCheck } from '@/lib/configCheck'
 import { priceFor } from '@/lib/pricing'
@@ -9,7 +9,17 @@ import { ProductThumb } from '@/components/ui/ProductThumb'
 
 // Configuration check before Generate quote (Codex #3). Non-blocking warnings
 // (missing essentials, quick-add) + a hard block on incompatible items.
-export function ConfigCheckDialog({ onClose, onGenerate }: { onClose: () => void; onGenerate: () => void }) {
+export function ConfigCheckDialog({
+  onClose,
+  onGenerate,
+  onOpenDetail,
+  onViewRelated,
+}: {
+  onClose: () => void
+  onGenerate: () => void
+  onOpenDetail: (sku: string) => void
+  onViewRelated: (sku: string) => void
+}) {
   const lines = useStore((s) => s.quote.lines)
   const addLine = useStore((s) => s.addLine)
   const removeLine = useStore((s) => s.removeLine)
@@ -61,12 +71,18 @@ export function ConfigCheckDialog({ onClose, onGenerate }: { onClose: () => void
               <div className="flex flex-col gap-2">
                 {missing.map((p) => (
                   <div key={p.sku} className="flex items-center gap-2 border border-line rounded-sm p-2">
-                    <ProductThumb product={p} size={16} className="w-9 h-9 rounded-sm shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <div className="text-[13px] text-ink truncate">{p.name}</div>
-                      <div className="text-[11px] text-ink-muted">{p.category} · {money(priceFor(p, priceListId))}</div>
+                    <button onClick={() => onOpenDetail(p.sku)} className="flex items-center gap-2 min-w-0 flex-1 text-left">
+                      <ProductThumb product={p} size={16} className="w-9 h-9 rounded-sm shrink-0" />
+                      <div className="min-w-0">
+                        <div className="text-[13px] text-ink truncate hover:text-primary">{p.name}</div>
+                        <div className="text-[11px] text-ink-muted">{p.category} · {money(priceFor(p, priceListId))}</div>
+                      </div>
+                    </button>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button onClick={() => onOpenDetail(p.sku)} className="text-[12px] text-ink-secondary hover:text-ink px-1.5 py-1">Details</button>
+                      <button onClick={() => onViewRelated(p.sku)} className="inline-flex items-center gap-1 text-[12px] text-ink-secondary hover:text-ink px-1.5 py-1"><Layers size={13} /> Related</button>
+                      <Button onClick={() => addLine(p.sku)}><Plus size={13} /> Add</Button>
                     </div>
-                    <Button onClick={() => addLine(p.sku)}><Plus size={13} /> Add</Button>
                   </div>
                 ))}
               </div>
