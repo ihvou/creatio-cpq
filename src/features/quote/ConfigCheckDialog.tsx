@@ -79,7 +79,6 @@ export function ConfigCheckDialog({
                       </div>
                     </button>
                     <div className="flex items-center gap-1 shrink-0">
-                      <button onClick={() => onOpenDetail(p.sku)} className="text-[12px] text-ink-secondary hover:text-ink px-1.5 py-1">Details</button>
                       <button onClick={() => onViewRelated(p.sku)} className="inline-flex items-center gap-1 text-[12px] text-ink-secondary hover:text-ink px-1.5 py-1"><Layers size={13} /> Related</button>
                       <Button onClick={() => addLine(p.sku)}><Plus size={13} /> Add</Button>
                     </div>

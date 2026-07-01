@@ -21,7 +21,7 @@ function SummaryRow({ label, value, muted, tone }: { label: string; value: strin
 
 const ISSUE_LABEL: Record<ReadinessIssue, string> = {
   unavailable: 'Unavailable / not enough stock',
-  quality_mismatch: 'Quality differs from the original request',
+  quality_mismatch: 'Lower spec/quality than originally requested',
 }
 
 const STATUS_TONE = { draft: 'neutral', shared: 'blue', ordered: 'green' } as const

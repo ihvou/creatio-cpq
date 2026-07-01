@@ -11,7 +11,9 @@ export function readinessFor(lines: QuoteLine[]): ReadinessFlag[] {
     if (!p || p.stockQty <= 0 || p.stockQty < line.qty) issues.push('unavailable')
     if (line.originalSku) {
       const original = productBySku(line.originalSku)
-      if (original && p && p.qualityTier !== original.qualityTier) issues.push('quality_mismatch')
+      // Only a downgrade (lower tier than originally requested) is a concern — an
+      // upgrade or same tier is fine. Fixes the false flag after swapping up.
+      if (original && p && p.qualityTier < original.qualityTier) issues.push('quality_mismatch')
     }
     if (issues.length) flags.push({ lineId: line.id, issues })
   }

@@ -60,7 +60,7 @@ export function CatalogTable({
             </SortHeader>
             <SortHeader active={sort === 'availability'} onClick={() => onSort('availability')}>Avail.</SortHeader>
             <SortHeader align="right" active={sort === 'rating'} onClick={() => onSort('rating')}>Rating</SortHeader>
-            <th></th>
+            <th className="sticky right-0 bg-surface-2 border-l border-line z-20"></th>
           </tr>
         </thead>
         <tbody className="text-ink">
@@ -89,7 +89,7 @@ export function CatalogTable({
                 <td className="text-right font-medium whitespace-nowrap">{money(priceFor(p, priceListId))}</td>
                 <td><Chip tone={AVAIL[availabilityOf(p)]}>{AVAIL_LABEL[availabilityOf(p)]}</Chip></td>
                 <td className="text-right text-ink-secondary">{p.rating.toFixed(1)}</td>
-                <td>
+                <td className="sticky right-0 bg-surface border-l border-line z-10">
                   <div className="flex gap-1 justify-end items-center">
                     <button onClick={() => onViewRelated(p.sku)} className="p-1 rounded hover:bg-bg text-ink-secondary" aria-label="View related"><Layers size={14} /></button>
                     {qty ? (

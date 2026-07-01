@@ -96,7 +96,7 @@ export function RelatedOverlay({ sku, lineId, onClose }: { sku: string; lineId?:
     if (!next) return
     if (tab === 'alternatives' && lineId) {
       swapLine(lineId, nextSku)
-      setLastAction(`Swapped to ${next.name}`)
+      onClose() // swap replaces the line — return to the quote to show the change
     } else {
       addLine(nextSku)
       setLastAction(`Added ${next.name}`)
